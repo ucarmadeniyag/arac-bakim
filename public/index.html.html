@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Araç Bakım Takip Sistemi</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
+  <style>
+    /* CSS aynı, önceki mesajdaki stil aynen kullanılabilir */
+    * {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background: #f0f2f5;
+      color: #2c3e50;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #34495e;
+      color: white;
+      padding: 25px 15px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+    }
+    nav a {
+      color: white;
+      margin: 0 20px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: color 0.3s ease;
+      cursor: pointer;
+    }
+    nav a:hover {
+      color: #1abc9c;
+    }
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 15px;
+      flex: 1;
+    }
+    section {
+      margin-bottom: 40px;
+    }
+    h1, h2 {
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+    p {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #555;
+    }
+    .card {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgb(0 0 0 / 0.08);
+      padding: 15px 20px;
+      margin-top: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: box-shadow 0.3s ease;
+    }
+    .card:hover {
+      box-shadow: 0 12px 30px rgb(0 0 0 / 0.15);
+    }
+    input[type="text"], input[type="date"] {
+      width: 100%;
+      max-width: 400px;
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      transition: border-color 0.3s ease;
+    }
+    input[type="text"]:focus, input[type="date"]:focus {
+      border-color: #1abc9c;
+      outline: none;
+      box-shadow: 0 0 8px #1abc9caa;
+    }
+    .btn {
+      display: inline-block;
+      padding: 12px 25px;
+      background: #1abc9c;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      user-select: none;
+      margin-right: 10px;
+    }
+    .btn:hover {
+      background: #16a085;
+    }
+    #qrSection {
+      margin-top: 20px;
+      text-align: center;
+    }
+    canvas {
+      margin-top: 10px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgb(0 0 0 / 0.1);
+    }
+    footer {
+      background: #34495e;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-size: 0.9rem;
+      box-shadow: 0 -3px 8px rgb(0 0 0 / 0.1);
+    }
+
+    @media (max-width: 600px) {
+      nav a {
+        margin: 0 10px;
+        font-size: 1rem;
+      }
+      .container {
+        margin: 15px auto;
+        padding: 0 10px;
+      }
+      input[type="text"], input[type="date"], .btn {
+        width: 100%;
+        max-width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+      }
+      .card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .card button {
+        margin-top: 10px;
+        align-self: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Araç Bakım Takip Sistemi</h1>
+    <nav>
+      <a onclick="scrollToSection('anasayfa')">Ana Sayfa</a>
+      <a onclick="scrollToSection('bakim')">Bakım Geçmişi</a>
+      <a onclick="scrollToSection('admin')">Yönetici Paneli</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <section id="anasayfa">
+      <h2>Hoş Geldiniz</h2>
+      <p>Firmamız araçlarınızın düzenli bakımını titizlikle takip eder. QR kodunuzla veya araç bilgisiyle geçmiş bakımları görüntüleyebilirsiniz.</p>
+      <button class="btn" onclick="scrollToSection('bakim')">Bakım Geçmişini Görüntüle</button>
+    </section>
+
+    <section id="bakim">
+      <h2>Araç Bakım Geçmişi</h2>
+      <p>Aracınızın plakasını girerek bakım geçmişini sorgulayın:</p>
+      <input type="text" id="plaka" placeholder="Örn: 34ABC123" />
+      <div id="sonuclar"></div>
+    </section>
+
+    <section id="admin">
+      <h2>Yönetici Paneli</h2>
+      <p>Yeni araç ve bakım bilgisi ekleyin:</p>
+      <input type="text" id="yeniPlaka" placeholder="Plaka (örn: 34ABC123)" />
+      <input type="date" id="bakimTarihi" />
+      <input type="text" id="islem" placeholder="Bakım Türü (örn: Yağ Değişimi)" />
+      <button class="btn" onclick="aracEkle()">Kaydet</button>
+      <p id="ekleBilgi" style="margin-top:10px;"></p>
+
+      <div id="qrSection" style="display:none">
+        <p><strong>QR Kod:</strong></p>
+        <canvas id="qrcode"></canvas>
+        <p style="font-size: 0.9rem; color: #555; margin-top: 5px;">Bu plakaya ait QR kod</p>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Araç Bakım Takip. Tüm hakları saklıdır.</p>
+  </footer>
+
+  <script>
+    // API URL'sini buradan kolayca değiştirebilirsiniz
+    const apiUrl = "http://localhost:3000/api/bakimlar";
+
+    // Sayfa kaydırma fonksiyonu
+    function scrollToSection(id) {
+      document.getElementById(id).scrollIntoView({behavior: "smooth"});
+    }
+
+    // Türk plakası basit doğrulama fonksiyonu
+    function plakaGecerliMi(plaka) {
+      // Basit regex: 2 veya 3 hane il plaka kodu, ardından 1-2 harf ve 1-4 rakam
+      const regex = /^[0-9]{2,3}[A-Z]{1,2}[0-9]{1,4}$/;
+      return regex.test(plaka);
+    }
+
+    // Tarih formatlama (YYYY-MM-DD → DD MMMM YYYY)
+    function tarihFormatla(tarihStr) {
+      const aylar = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+                     "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+      const d = new Date(tarihStr);
+      if (isNaN(d)) return tarihStr; // Geçersizse olduğu gibi döner
+      return `${d.getDate()} ${aylar[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    // Bakım geçmişini getir
+    async function bakiyeGetir(plaka) {
+      try {
+        const res = await fetch(`${apiUrl}/${plaka}`);
+        if (!res.ok) throw new Error("Kayıt bulunamadı");
+        const data = await res.json();
+        return data;
+      } catch {
+        return null;
+      }
+    }
+
+    // Bakım kayıtlarını göster
+    document.getElementById("plaka").addEventListener("input", async function () {
+      const plaka = this.value.toUpperCase().trim();
+      const alan = document.getElementById("sonuclar");
+      alan.innerHTML = "";
+
+      if (plaka.length < 3 || !plakaGecerliMi(plaka)) {
+        alan.textContent = "Lütfen geçerli bir plaka girin.";
+        return;
+      }
+
+      const bakimlar = await bakiyeGetir(plaka);
+      if (bakimlar && bakimlar.length > 0) {
+        bakimlar.forEach(kayit => {
+          const div = document.createElement("div");
+          div.classList.add("card");
+
+          const info = document.createElement("div");
+          info.innerHTML = `<strong>${tarihFormatla(kayit.tarih)}</strong> - ${kayit.islem}`;
+
+          const btn = document.createElement("button");
+          btn.classList.add("btn");
+          btn.style.backgroundColor = "#e74c3c";
+          btn.textContent = "Sil";
+          btn.onclick = () => {
+            if (confirm("Bu bakım kaydını silmek istediğinize emin misiniz?")) {
+              kayitSil(plaka, kayit.tarih, kayit.islem);
+            }
+          };
+
+          div.appendChild(info);
+          div.appendChild(btn);
+          alan.appendChild(div);
+        });
+      } else {
+        alan.textContent = "Bu plakaya ait bakım kaydı bulunamadı.";
+      }
+    });
+
+    // Yeni bakım kaydı ekle
+    async function aracEkle() {
+      const plaka = document.getElementById("yeniPlaka").value.toUpperCase().trim();
+      const tarih = document.getElementById("bakimTarihi").value;
+      const islem = document.getElementById("islem").value.trim();
+      const bilgi = document.getElementById("ekleBilgi");
+
+      bilgi.style.color = "#e74c3c";
+
+      if (!plaka || !tarih || !islem) {
+        bilgi.textContent = "Lütfen tüm alanları doldurun.";
+        return;
+      }
+      if (!plakaGecerliMi(plaka)) {
+        bilgi.textContent = "Lütfen geçerli bir plaka girin.";
+        return;
+      }
+
+      try {
+        const res = await fetch(`${apiUrl}/${plaka}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tarih, islem })
+        });
+        if (!res.ok) throw new Error("Kaydetme başarısız");
+
+        bilgi.style.color = "#27ae60";
+        bilgi.textContent = "Bakım kaydı başarıyla eklendi!";
+
+        // QR kodu oluştur
+        qrKodOlustur(plaka);
+
+        // Alanları temizle
+        document.getElementById("yeniPlaka").value = "";
+        document.getElementById("bakimTarihi").value = "";
+        document.getElementById("islem").value = "";
+
+      } catch {
+        bilgi.textContent = "Bakım kaydı eklenirken hata oluştu.";
+      }
+    }
+
+    // QR Kod oluşturma fonksiyonu
+    function qrKodOlustur(plaka) {
+      const qrContainer = document.getElementById("qrSection");
+      qrContainer.style.display = "block";
+      new QRious({
+        element: document.getElementById("qrcode"),
+        size: 180,
+        value: `${window.location.origin}/api/bakimlar/${plaka}`
+      });
+    }
+
+    // Bakım kaydını silme fonksiyonu
+    async function kayitSil(plaka, tarih, islem) {
+      try {
+        const res = await fetch(`${apiUrl}/${plaka}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tarih, islem })
+        });
+        if (!res.ok) throw new Error("Silme başarısız");
+        alert("Bakım kaydı başarıyla silindi.");
+
+        // Silme sonrası listeyi güncelle
+        document.getElementById("plaka").dispatchEvent(new Event('input'));
+      } catch {
+        alert("Silme işlemi sırasında hata oluştu.");
+      }
+    }
+  </script>
+</body>
+</html>
