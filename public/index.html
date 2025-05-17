@@ -307,7 +307,7 @@
 
     } catch (err) {
       message.textContent = 'Bakım kayıtları alınırken hata oluştu.';
-      qrDiv.innerHTML = ''; // Hata durumunda QR kodu temizle
+      qrCode.clear(); // Hata durumunda QR kodu temizle
       console.error(err);
     }
   }
