@@ -91,6 +91,21 @@
       alert("Silme sırasında hata oluştu.");
     }
   }
+
+  // --- Buraya eklenen kod ---
+  // URL'den plaka parametresini alır ve otomatik arama yapar
+  function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
+
+  window.onload = () => {
+    const plakaFromUrl = getQueryParam('plaka');
+    if (plakaFromUrl) {
+      plakaInput.value = plakaFromUrl.toUpperCase();
+      listeleBtn.click();
+    }
+  };
 </script>
 
 </body>
