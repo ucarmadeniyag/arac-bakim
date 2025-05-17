@@ -98,6 +98,23 @@ app.post('/api/bakimlar/:plaka', (req, res) => {
   });
 });
 
+// Tüm plakaları listeleyen API
+app.get('/api/plakalar', (req, res) => {
+  fs.readFile(DATA_FILE, 'utf8', (err, data) => {
+    if (err) {
+      return res.status(500).json({ message: 'Sunucu hatası' });
+    }
+    let json;
+    try {
+      json = JSON.parse(data);
+    } catch {
+      return res.status(500).json({ message: 'Veri okuma hatası' });
+    }
+    const plakalar = Object.keys(json);
+    res.json(plakalar);
+  });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server ${PORT} portunda çalışıyor...`);

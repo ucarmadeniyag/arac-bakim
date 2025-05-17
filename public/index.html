@@ -2,9 +2,8 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Araç Bakım Takip - Modern</title>
+  <title>Araç Bakım Takip - Gelişmiş</title>
   <style>
-    /* Genel stil */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #f9f9fb;
@@ -13,60 +12,61 @@
       color: #333;
       min-height: 100vh;
     }
-
     h1 {
       text-align: center;
       color: #2c3e50;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
       font-weight: 700;
     }
-
     .container {
-      max-width: 700px;
+      max-width: 800px;
       margin: 0 auto;
       background: white;
       padding: 25px 30px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
       border-radius: 12px;
+      margin-bottom: 40px;
     }
 
-    /* Form stilleri */
-    form {
+    /* Arama formu */
+    #aramaForm {
       display: flex;
       gap: 10px;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
       flex-wrap: wrap;
+      justify-content: center;
     }
-
-    form input, form button {
+    #aramaForm input, #aramaForm button {
       font-size: 1rem;
       padding: 10px 15px;
       border-radius: 8px;
       border: 1.5px solid #ccc;
       transition: border-color 0.3s ease;
+      min-width: 200px;
     }
-    form input:focus {
+    #aramaForm input:focus {
       border-color: #2980b9;
       outline: none;
     }
-    form button {
+    #aramaForm button {
       background-color: #2980b9;
       color: white;
       border: none;
       cursor: pointer;
-      flex-grow: 1;
-      max-width: 150px;
+      max-width: 120px;
       font-weight: 600;
+      min-width: 80px;
     }
-    form button:hover {
+    #aramaForm button:hover {
       background-color: #1c5980;
     }
 
-    /* Tablo stili */
+    /* Kayıt listesi tablosu */
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 1rem;
+      margin-top: 10px;
     }
     thead {
       background-color: #2980b9;
@@ -77,12 +77,10 @@
       padding: 12px 15px;
       border-bottom: 1px solid #ddd;
     }
-
     tr:hover {
       background-color: #f1f7fb;
     }
 
-    /* Sil butonu */
     .btn-sil {
       background-color: #e74c3c;
       border: none;
@@ -97,29 +95,101 @@
       background-color: #c0392b;
     }
 
-    /* Mesaj kutusu */
+    /* Mesaj ve bilgi alanı */
     #message {
-      margin-bottom: 20px;
+      margin: 15px 0;
       text-align: center;
       font-weight: 600;
       color: #2980b9;
       min-height: 22px;
     }
+
+    /* Yeni bakım formu */
+    #ekleForm {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+      justify-content: center;
+    }
+    #ekleForm input, #ekleForm button {
+      font-size: 1rem;
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1.5px solid #ccc;
+      transition: border-color 0.3s ease;
+      min-width: 180px;
+    }
+    #ekleForm input:focus {
+      border-color: #2980b9;
+      outline: none;
+    }
+    #ekleForm button {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      cursor: pointer;
+      max-width: 130px;
+      font-weight: 600;
+      min-width: 100px;
+    }
+    #ekleForm button:hover {
+      background-color: #1e874b;
+    }
+
+    /* Geçmiş plakalar listesi */
+    #plakalarListesi {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+      background: #fefefe;
+    }
+    #plakalarListesi h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: #34495e;
+    }
+    #plakalarListesi button {
+      background-color: #2980b9;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      margin: 5px 5px 5px 0;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background-color 0.3s ease;
+    }
+    #plakalarListesi button:hover {
+      background-color: #1c5980;
+    }
+
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Araç Bakım Takip</h1>
 
-    <form id="form">
-      <input type="text" id="plaka" placeholder="Plaka (örn: 43UU111)" required pattern="[A-Za-z0-9]{2,10}" title="Geçerli bir plaka giriniz." />
-      <input type="date" id="tarih" required />
-      <input type="text" id="islem" placeholder="Yapılan işlem" required minlength="2" />
-      <button type="submit">Ekle</button>
+    <!-- Plaka arama alanı -->
+    <form id="aramaForm" onsubmit="return false;">
+      <input type="text" id="aramaPlaka" placeholder="Araç Plakası Girin (örn: 43UU111)" pattern="[A-Za-z0-9]{2,10}" title="Geçerli plaka girin" required />
+      <button id="btnAra">Ara</button>
+    </form>
+
+    <!-- Yeni bakım ekleme formu -->
+    <form id="ekleForm">
+      <input type="text" id="eklePlaka" placeholder="Plaka" pattern="[A-Za-z0-9]{2,10}" title="Geçerli plaka girin" required />
+      <input type="date" id="ekleTarih" required />
+      <input type="text" id="ekleIslem" placeholder="Yapılan İşlem" minlength="2" required />
+      <button type="submit">Bakım Ekle</button>
     </form>
 
     <div id="message"></div>
 
+    <!-- Bakım kayıtları tablosu -->
     <table>
       <thead>
         <tr>
@@ -129,32 +199,170 @@
           <th>İşlem</th>
         </tr>
       </thead>
-      <tbody id="bakimlar-listesi">
-        <!-- Bakım kayıtları buraya gelecek -->
+      <tbody id="bakimlarListesi">
+        <!-- Kayıtlar buraya gelecek -->
       </tbody>
     </table>
   </div>
 
-  <script>
-    const form = document.getElementById('form');
-    const plakaInput = document.getElementById('plaka');
-    const tarihInput = document.getElementById('tarih');
-    const islemInput = document.getElementById('islem');
-    const bakimlarListesi = document.getElementById('bakimlar-listesi');
-    const message = document.getElementById('message');
+  <!-- Geçmişte eklenmiş plakalar -->
+  <div class="container" style="max-width: 800px;">
+    <div id="plakalarListesi">
+      <h2>Geçmişte Eklenen Plakalar</h2>
+      <!-- Plakalar buton olarak gelecek -->
+    </div>
+  </div>
 
-    // Bakım kayıtlarını API'den getir ve listele
-    async function listele() {
-      const plaka = plakaInput.value.trim().toUpperCase();
-      if (!plaka) {
-        bakimlarListesi.innerHTML = '';
-        message.textContent = '';
+<script>
+  const aramaPlakaInput = document.getElementById('aramaPlaka');
+  const btnAra = document.getElementById('btnAra');
+  const ekleForm = document.getElementById('ekleForm');
+  const eklePlakaInput = document.getElementById('eklePlaka');
+  const ekleTarihInput = document.getElementById('ekleTarih');
+  const ekleIslemInput = document.getElementById('ekleIslem');
+  const bakimlarListesi = document.getElementById('bakimlarListesi');
+  const message = document.getElementById('message');
+  const plakalarListesi = document.getElementById('plakalarListesi');
+
+  // Bakımları listele
+  async function listele(plaka) {
+    if (!plaka) {
+      bakimlarListesi.innerHTML = '';
+      message.textContent = '';
+      return;
+    }
+    try {
+      const res = await fetch(`/api/bakimlar/${plaka.toUpperCase()}`);
+      if (!res.ok) throw new Error('Sunucu hatası');
+      const bakimlar = await res.json();
+
+      bakimlarListesi.innerHTML = '';
+
+      if (bakimlar.length === 0) {
+        message.textContent = "Bu plakaya ait bakım kaydı bulunamadı.";
         return;
+      } else {
+        message.textContent = '';
       }
 
-      try {
-        const res = await fetch(`/api/bakimlar/${plaka}`);
-        if (!res.ok) throw new Error('Sunucu hatası');
-        const bakimlar = await res.json();
+      bakimlar.forEach((kayit, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${plaka.toUpperCase()}</td>
+          <td>${kayit.tarih}</td>
+          <td>${kayit.islem}</td>
+          <td><button class="btn-sil">Sil</button></td>
+        `;
+        const btnSil = tr.querySelector('button');
+        btnSil.onclick = async () => {
+          if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) return;
+          try {
+            const res = await fetch(`/api/bakimlar/${plaka.toUpperCase()}/${index}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (res.ok) {
+              message.textContent = data.message;
+              listele(plaka);
+              await listeTümPlakalar(); // Silince plakalar güncellenebilir
+            } else {
+              alert(data.message || 'Silme işlemi başarısız');
+            }
+          } catch {
+            alert('Silme sırasında hata oluştu.');
+          }
+        };
+        bakimlarListesi.appendChild(tr);
+      });
+    } catch (err) {
+      message.textContent = 'Bakım kayıtları alınırken hata oluştu.';
+      console.error(err);
+    }
+  }
 
-        bakimlar
+  // Yeni bakım kaydı ekle
+  ekleForm.onsubmit = async e => {
+    e.preventDefault();
+    const plaka = eklePlakaInput.value.trim().toUpperCase();
+    const tarih = ekleTarihInput.value;
+    const islem = ekleIslemInput.value.trim();
+
+    if (!plaka || !tarih || !islem) {
+      message.textContent = 'Lütfen tüm alanları doldurun.';
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/bakimlar/${plaka}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tarih, islem })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        message.textContent = data.message;
+        ekleTarihInput.value = '';
+        ekleIslemInput.value = '';
+        aramaPlakaInput.value = plaka; // Arama kutusunu da güncelle
+        listele(plaka);
+        await listeTümPlakalar();
+      } else {
+        message.textContent = data.message || 'Kayıt eklenirken hata oluştu.';
+      }
+    } catch {
+      message.textContent = 'Sunucu ile bağlantı kurulamadı.';
+    }
+  };
+
+  // Arama butonu tıklayınca listele
+  btnAra.onclick = () => {
+    const plaka = aramaPlakaInput.value.trim().toUpperCase();
+    if (!plaka) {
+      message.textContent = "Lütfen geçerli bir plaka giriniz.";
+      return;
+    }
+    listele(plaka);
+  };
+
+  // Tüm plakaları listele (backend'den)
+  async function listeTümPlakalar() {
+    try {
+      // Burada backend'de plakalar listesini dönen bir endpoint olması gerekir
+      // Örneğin: GET /api/plakalar
+      const res = await fetch('/api/plakalar');
+      if (!res.ok) throw new Error('Plakalar alınamadı');
+      const plakalar = await res.json();
+
+      // Plakaları buton olarak göster
+      const container = plakalarListesi;
+      container.querySelectorAll('button.plaka-btn').forEach(btn => btn.remove());
+
+      plakalar.forEach(plaka => {
+        const btn = document.createElement('button');
+        btn.textContent = plaka;
+        btn.classList.add('plaka-btn');
+        btn.onclick = () => {
+          aramaPlakaInput.value = plaka;
+          listele(plaka);
+        };
+        container.appendChild(btn);
+      });
+    } catch (err) {
+      console.error(err);
+      // Plakalar yüklenemezse sessiz kalabiliriz ya da kullanıcıya bilgi verilebilir
+    }
+  }
+
+  // Sayfa yüklendiğinde geçmiş plakaları yükle
+  window.onload = async () => {
+    await listeTümPlakalar();
+
+    // URL parametrelerinden plaka varsa arama yap
+    const urlParams = new URLSearchParams(window.location.search);
+    const plakaFromUrl = urlParams.get('plaka');
+    if (plakaFromUrl) {
+      aramaPlakaInput.value = plakaFromUrl.toUpperCase();
+      listele(plakaFromUrl.toUpperCase());
+    }
+  };
+</script>
+</body>
+</html>
