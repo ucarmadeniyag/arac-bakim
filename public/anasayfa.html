@@ -2,228 +2,112 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Araç Bakım Takip - Gelişmiş</title>
+  <title>Bakım Kırmızı - QR Kodlu Liste</title>
   <style>
-    /* (Burada CSS kodların aynen kalabilir, senin verdiğin hali) */
-    /* ... */
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #plakalar li { cursor: pointer; padding: 5px; border-bottom: 1px solid #ccc; }
+    #plakalar li:hover { background-color: #eee; }
+    #bakimDetay { margin-top: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { padding: 8px; border: 1px solid #ccc; }
+    .qr-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; }
+    .qr-container div { text-align: center; }
   </style>
 </head>
 <body>
+  <h1>Bakım Kırmızı - QR Kodlu Liste</h1>
 
-  <!-- Menü -->
-  <nav id="mainMenu">
-    <ul>
-      <li><a href="/">Ana Sayfa</a></li>
-      <li><a href="/bakimlar.html">Bakım Kayıtları</a></li>
-      <li><a href="/hakkimizda.html">Hakkımızda</a></li>
-      <li><a href="/iletisim.html">İletişim</a></li>
-    </ul>
-  </nav>
+  <h2>Plakalar</h2>
+  <ul id="plakalar"></ul>
 
-  <!-- Ana içerik -->
-  <div class="container">
-    <h1>Araç Bakım Takip</h1>
-
-    <!-- Plaka arama alanı -->
-    <form id="aramaForm" onsubmit="return false;">
-      <input type="text" id="aramaPlaka" placeholder="Araç Plakası Girin (örn: 43UU111)" pattern="[A-Za-z0-9]{2,10}" title="Geçerli plaka girin" required />
-      <button id="btnAra">Ara</button>
-    </form>
-
-    <!-- Yeni bakım ekleme formu -->
-    <form id="ekleForm">
-      <input type="text" id="eklePlaka" placeholder="Plaka" pattern="[A-Za-z0-9]{2,10}" title="Geçerli plaka girin" required />
-      <input type="date" id="ekleTarih" required />
-      <input type="text" id="ekleIslem" placeholder="Yapılan İşlem" minlength="2" required />
-      <button type="submit">Bakım Ekle</button>
-    </form>
-
-    <div id="message"></div>
-
-    <!-- Bakım kayıtları tablosu -->
-    <table>
+  <div id="bakimDetay">
+    <h2>Bakım Detayları</h2>
+    <table id="bakimTable" style="display:none;">
       <thead>
         <tr>
-          <th>Plaka</th>
           <th>Tarih</th>
-          <th>İşlem</th>
-        
+          <th>Servis</th>
+          <th>Detay</th>
         </tr>
       </thead>
-      <tbody id="bakimlarListesi">
-        <!-- Kayıtlar buraya gelecek -->
-      </tbody>
+      <tbody></tbody>
     </table>
-
-    <!-- QR kodu gösterimi -->
-    <div id="qrKodu"></div>
+    <p id="noData" style="display:none;">Seçilen plaka için bakım kaydı bulunamadı.</p>
   </div>
 
-  <!-- Geçmişte eklenmiş plakalar -->
-  <div id="plakalarListesi">
-    <h2>Geçmişte Eklenen Plakalar</h2>
-    <!-- Plakalar buton olarak gelecek -->
+  <div id="tumQrKodlari">
+    <h2>Geçmiş Plakaların QR Kodları</h2>
+    <div id="qrListe" class="qr-container"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script>
-    const aramaPlakaInput = document.getElementById('aramaPlaka');
-    const btnAra = document.getElementById('btnAra');
-    const ekleForm = document.getElementById('ekleForm');
-    const eklePlakaInput = document.getElementById('eklePlaka');
-    const ekleTarihInput = document.getElementById('ekleTarih');
-    const ekleIslemInput = document.getElementById('ekleIslem');
-    const bakimlarListesi = document.getElementById('bakimlarListesi');
-    const message = document.getElementById('message');
-    const plakalarListesi = document.getElementById('plakalarListesi');
-    const qrDiv = document.getElementById('qrKodu');
-    let qrCode;
+    const plakalarUl = document.getElementById('plakalar');
+    const bakimTable = document.getElementById('bakimTable');
+    const bakimTableBody = bakimTable.querySelector('tbody');
+    const noData = document.getElementById('noData');
 
-    function olusturQrKod(plaka) {
-      if (qrCode) {
-        qrCode.clear();
-        qrDiv.innerHTML = '';
-      }
-      const url = `${window.location.origin}?plaka=${encodeURIComponent(plaka)}`;
-
-      qrCode = new QRCode(qrDiv, {
-        text: url,
-        width: 150,
-        height: 150,
+    fetch('/api/plakalar')
+      .then(res => res.json())
+      .then(plakalar => {
+        plakalarUl.innerHTML = '';
+        plakalar.forEach(plaka => {
+          const li = document.createElement('li');
+          li.textContent = plaka;
+          li.addEventListener('click', () => {
+            fetchBakimlar(plaka);
+          });
+          plakalarUl.appendChild(li);
+        });
+        tumQRListele();
       });
+
+    function fetchBakimlar(plaka) {
+      fetch(`/api/bakimlar/${plaka}`)
+        .then(res => res.json())
+        .then(bakimlar => {
+          bakimTableBody.innerHTML = '';
+
+          if (bakimlar.length === 0) {
+            bakimTable.style.display = 'none';
+            noData.style.display = 'block';
+          } else {
+            noData.style.display = 'none';
+            bakimTable.style.display = 'table';
+
+            bakimlar.forEach(bakim => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${bakim.tarih}</td>
+                <td>${bakim.servis}</td>
+                <td>${bakim.detay}</td>
+              `;
+              bakimTableBody.appendChild(tr);
+            });
+          }
+        });
     }
 
-    async function listele(plaka) {
-      if (!plaka) {
-        bakimlarListesi.innerHTML = '';
-        message.textContent = '';
-        qrDiv.innerHTML = '';
-        return;
-      }
-      try {
-        const res = await fetch(`/api/bakimlar/${plaka.toUpperCase()}`);
-        if (!res.ok) throw new Error('Sunucu hatası');
-        const bakimlar = await res.json();
-
-        bakimlarListesi.innerHTML = '';
-        if (bakimlar.length === 0) {
-          message.textContent = "Bu plakaya ait bakım kaydı bulunamadı.";
-          qrDiv.innerHTML = '';
-          return;
-        } else {
-          message.textContent = '';
-        }
-
-        bakimlar.forEach((kayit, index) => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${plaka.toUpperCase()}</td>
-            <td>${kayit.tarih}</td>
-            <td>${kayit.islem}</td>
-            <td><button class="btn-sil">Sil</button></td>
-          `;
-          const btnSil = tr.querySelector('button');
-          btnSil.onclick = async () => {
-            if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) return;
-            try {
-              const res = await fetch(`/api/bakimlar/${plaka.toUpperCase()}/${index}`, { method: 'DELETE' });
-              const data = await res.json();
-              if (res.ok) {
-                message.textContent = data.message;
-                await listele(plaka);
-                await listeTümPlakalar();
-                olusturQrKod(plaka);
-              } else {
-                alert(data.message || 'Silme işlemi başarısız');
-              }
-            } catch {
-              alert('Silme sırasında hata oluştu.');
-            }
-          };
-          bakimlarListesi.appendChild(tr);
-        });
-
-        olusturQrKod(plaka);
-
-      } catch (err) {
-        message.textContent = 'Bakım kayıtları alınırken hata oluştu.';
-        if (qrCode) qrCode.clear();
-        console.error(err);
-      }
-    }
-
-    ekleForm.onsubmit = async e => {
-      e.preventDefault();
-      const plaka = eklePlakaInput.value.trim().toUpperCase();
-      const tarih = ekleTarihInput.value;
-      const islem = ekleIslemInput.value.trim();
-
-      if (!plaka || !tarih || !islem) {
-        message.textContent = 'Lütfen tüm alanları doldurun.';
-        return;
-      }
-
-      try {
-        const res = await fetch(`/api/bakimlar/${plaka}`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ tarih, islem })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          message.textContent = data.message;
-          eklePlakaInput.value = '';
-          ekleTarihInput.value = '';
-          ekleIslemInput.value = '';
-          await listele(plaka);
-          await listeTümPlakalar();
-          olusturQrKod(plaka);
-        } else {
-          message.textContent = data.message || 'Bakım ekleme başarısız.';
-        }
-      } catch (err) {
-        message.textContent = 'Bakım eklenirken hata oluştu.';
-        console.error(err);
-      }
-    };
-
-    btnAra.onclick = () => {
-      const plaka = aramaPlakaInput.value.trim();
-      listele(plaka);
-    };
-
-    async function listeTümPlakalar() {
+    async function tumQRListele() {
       try {
         const res = await fetch('/api/plakalar');
-        if (!res.ok) throw new Error('Plakalar alınamadı.');
         const plakalar = await res.json();
+        const qrListe = document.getElementById('qrListe');
+        qrListe.innerHTML = '';
 
-        // Sadece butonları sil
-        plakalarListesi.querySelectorAll('button').forEach(b => b.remove());
+        for (const plaka of plakalar) {
+          const qrRes = await fetch(`/api/qrcode/${plaka}`);
+          const { qrCode } = await qrRes.json();
 
-        plakalar.forEach(plaka => {
-          const btn = document.createElement('button');
-          btn.textContent = plaka.toUpperCase();
-          btn.onclick = () => {
-            aramaPlakaInput.value = plaka.toUpperCase();
-            listele(plaka);
-          };
-          plakalarListesi.appendChild(btn);
-        });
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <div><strong>${plaka}</strong></div>
+            <img src="${qrCode}" width="100" height="100" alt="QR Kod">
+          `;
+          qrListe.appendChild(div);
+        }
       } catch (err) {
-        console.error(err);
+        console.error('Tüm QR kodlar alınamadı:', err);
       }
-    }
-
-    // Sayfa yüklendiğinde geçmiş plakaları listele
-    listeTümPlakalar();
-
-    // URL'den plaka varsa göster
-    const params = new URLSearchParams(window.location.search);
-    const plakaQuery = params.get('plaka');
-    if (plakaQuery) {
-      aramaPlakaInput.value = plakaQuery.toUpperCase();
-      listele(plakaQuery);
     }
   </script>
 </body>

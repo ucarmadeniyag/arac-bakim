@@ -2,19 +2,120 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard</title>
-  <script>
-    // Sayfa yüklendikten 3 saniye sonra ana sayfaya yönlendir
-    window.onload = function() {
-      setTimeout(function() {
-        window.location.href = '/';
-      }, 3000); // 3000 ms = 3 saniye
-    }
-  </script>
+  <title>Dashboard - Bakım Kayıtları</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #plakalar li { cursor: pointer; padding: 5px; border-bottom: 1px solid #ccc; }
+    #plakalar li:hover { background-color: #eee; }
+    #bakimDetay { margin-top: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { padding: 8px; border: 1px solid #ccc; }
+    form { margin-top: 40px; }
+    label { display: block; margin: 8px 0 4px; }
+  </style>
 </head>
 <body>
-  <h1>Hoşgeldiniz, giriş başarılı!</h1>
-  <p>3 saniye içinde ana sayfaya yönlendirileceksiniz...</p>
-  <a href="/">Hemen ana sayfaya git</a>
+  <h1>Bakım Kayıtları</h1>
+  
+  <h2>Plakalar</h2>
+  <ul id="plakalar"></ul>
+  
+  <div id="bakimDetay">
+    <h2>Bakım Detayları</h2>
+    <table id="bakimTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>Tarih</th>
+          <th>Servis</th>
+          <th>Detay</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p id="noData" style="display:none;">Seçilen plaka için bakım kaydı bulunamadı.</p>
+  </div>
+
+  <h2>Yeni Bakım Ekle</h2>
+  <form id="bakimForm">
+    <label>Plaka: <input type="text" name="plaka" required></label>
+    <label>Tarih: <input type="date" name="tarih" required></label>
+    <label>Servis: <input type="text" name="servis" required></label>
+    <label>Detay: <textarea name="detay"></textarea></label>
+    <button type="submit">Ekle</button>
+  </form>
+
+  <script>
+    const plakalarUl = document.getElementById('plakalar');
+    const bakimTable = document.getElementById('bakimTable');
+    const bakimTableBody = bakimTable.querySelector('tbody');
+    const noData = document.getElementById('noData');
+    const form = document.getElementById('bakimForm');
+
+    // Plakaları çek ve listele
+    fetch('/api/plakalar')
+      .then(res => res.json())
+      .then(plakalar => {
+        plakalar.forEach(plaka => {
+          const li = document.createElement('li');
+          li.textContent = plaka;
+          li.addEventListener('click', () => {
+            fetchBakimlar(plaka);
+          });
+          plakalarUl.appendChild(li);
+        });
+      });
+
+    // Seçilen plakanın bakım kayıtlarını getir
+    function fetchBakimlar(plaka) {
+      fetch(`/api/bakimlar/${plaka}`)
+        .then(res => res.json())
+        .then(bakimlar => {
+          bakimTableBody.innerHTML = '';
+
+          if (bakimlar.length === 0) {
+            bakimTable.style.display = 'none';
+            noData.style.display = 'block';
+          } else {
+            noData.style.display = 'none';
+            bakimTable.style.display = 'table';
+
+            bakimlar.forEach(bakim => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${bakim.tarih}</td>
+                <td>${bakim.servis}</td>
+                <td>${bakim.detay}</td>
+              `;
+              bakimTableBody.appendChild(tr);
+            });
+          }
+        });
+    }
+
+    // Yeni bakım ekle
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const data = {
+        plaka: form.plaka.value,
+        tarih: form.tarih.value,
+        servis: form.servis.value,
+        detay: form.detay.value
+      };
+
+      fetch('/api/bakimlar', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(result => {
+        alert(result.message);
+        form.reset();
+        // Eklenen plaka bakımını tekrar göster
+        fetchBakimlar(data.plaka.toUpperCase());
+      })
+      .catch(() => alert('Hata oluştu'));
+    });
+  </script>
 </body>
 </html>
