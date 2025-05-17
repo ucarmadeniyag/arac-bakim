@@ -2,111 +2,159 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Araç Bakım Takip</title>
+  <title>Araç Bakım Takip - Modern</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    #sonuclar .card {
-      background: #f3f3f3;
-      border: 1px solid #ddd;
-      padding: 10px;
-      margin-bottom: 8px;
-      border-radius: 5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    /* Genel stil */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f9f9fb;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+      min-height: 100vh;
     }
-    button {
-      background: #e74c3c;
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: white;
+      padding: 25px 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      border-radius: 12px;
+    }
+
+    /* Form stilleri */
+    form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    form input, form button {
+      font-size: 1rem;
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1.5px solid #ccc;
+      transition: border-color 0.3s ease;
+    }
+    form input:focus {
+      border-color: #2980b9;
+      outline: none;
+    }
+    form button {
+      background-color: #2980b9;
+      color: white;
+      border: none;
+      cursor: pointer;
+      flex-grow: 1;
+      max-width: 150px;
+      font-weight: 600;
+    }
+    form button:hover {
+      background-color: #1c5980;
+    }
+
+    /* Tablo stili */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1rem;
+    }
+    thead {
+      background-color: #2980b9;
+      color: white;
+      text-align: left;
+    }
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    tr:hover {
+      background-color: #f1f7fb;
+    }
+
+    /* Sil butonu */
+    .btn-sil {
+      background-color: #e74c3c;
       border: none;
       color: white;
-      padding: 5px 10px;
-      border-radius: 3px;
+      padding: 6px 10px;
+      border-radius: 6px;
       cursor: pointer;
+      font-size: 0.9rem;
+      transition: background-color 0.3s ease;
     }
-    button:hover {
-      background: #c0392b;
+    .btn-sil:hover {
+      background-color: #c0392b;
+    }
+
+    /* Mesaj kutusu */
+    #message {
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 600;
+      color: #2980b9;
+      min-height: 22px;
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Araç Bakım Takip</h1>
 
-<h1>Araç Bakım Takip</h1>
+    <form id="form">
+      <input type="text" id="plaka" placeholder="Plaka (örn: 43UU111)" required pattern="[A-Za-z0-9]{2,10}" title="Geçerli bir plaka giriniz." />
+      <input type="date" id="tarih" required />
+      <input type="text" id="islem" placeholder="Yapılan işlem" required minlength="2" />
+      <button type="submit">Ekle</button>
+    </form>
 
-<label for="plaka">Araç Plakası:</label>
-<input type="text" id="plaka" placeholder="Örnek: 43UU111" />
-<button id="listele">Bakımları Göster</button>
+    <div id="message"></div>
 
-<div id="sonuclar"></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Plaka</th>
+          <th>Tarih</th>
+          <th>İşlem</th>
+          <th>İşlem</th>
+        </tr>
+      </thead>
+      <tbody id="bakimlar-listesi">
+        <!-- Bakım kayıtları buraya gelecek -->
+      </tbody>
+    </table>
+  </div>
 
-<script>
-  const plakaInput = document.getElementById('plaka');
-  const listeleBtn = document.getElementById('listele');
-  const sonuclarDiv = document.getElementById('sonuclar');
+  <script>
+    const form = document.getElementById('form');
+    const plakaInput = document.getElementById('plaka');
+    const tarihInput = document.getElementById('tarih');
+    const islemInput = document.getElementById('islem');
+    const bakimlarListesi = document.getElementById('bakimlar-listesi');
+    const message = document.getElementById('message');
 
-  listeleBtn.onclick = async () => {
-    const plaka = plakaInput.value.trim().toUpperCase();
-    if (!plaka) {
-      alert("Lütfen geçerli bir plaka giriniz.");
-      return;
-    }
-    sonuclarDiv.innerHTML = "Yükleniyor...";
-    try {
-      const res = await fetch(`/api/bakimlar/${plaka}`);
-      if (!res.ok) throw new Error("Sunucu hatası");
-      const bakimlar = await res.json();
-
-      sonuclarDiv.innerHTML = '';
-      if (bakimlar.length === 0) {
-        sonuclarDiv.textContent = "Bu plakaya ait bakım kaydı bulunamadı.";
+    // Bakım kayıtlarını API'den getir ve listele
+    async function listele() {
+      const plaka = plakaInput.value.trim().toUpperCase();
+      if (!plaka) {
+        bakimlarListesi.innerHTML = '';
+        message.textContent = '';
         return;
       }
 
-      bakimlar.forEach((kayit, index) => {
-        const div = document.createElement('div');
-        div.classList.add('card');
-        div.innerHTML = `
-          <span><strong>${kayit.tarih}</strong> - ${kayit.islem}</span>
-          <button onclick="kayitSil('${plaka}', ${index})">Sil</button>
-        `;
-        sonuclarDiv.appendChild(div);
-      });
+      try {
+        const res = await fetch(`/api/bakimlar/${plaka}`);
+        if (!res.ok) throw new Error('Sunucu hatası');
+        const bakimlar = await res.json();
 
-    } catch (err) {
-      sonuclarDiv.textContent = "Bakım kayıtları alınırken hata oluştu.";
-      console.error(err);
-    }
-  };
-
-  async function kayitSil(plaka, index) {
-    if (!confirm("Bu kaydı silmek istediğinizden emin misiniz?")) return;
-
-    try {
-      const res = await fetch(`/api/bakimlar/${plaka}/${index}`, { method: 'DELETE' });
-      const data = await res.json();
-      alert(data.message);
-      if (res.ok) {
-        listeleBtn.click(); // Silme sonrası listeyi yenile
-      }
-    } catch {
-      alert("Silme sırasında hata oluştu.");
-    }
-  }
-
-  // --- Buraya eklenen kod ---
-  // URL'den plaka parametresini alır ve otomatik arama yapar
-  function getQueryParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-  }
-
-  window.onload = () => {
-    const plakaFromUrl = getQueryParam('plaka');
-    if (plakaFromUrl) {
-      plakaInput.value = plakaFromUrl.toUpperCase();
-      listeleBtn.click();
-    }
-  };
-</script>
-
-</body>
-</html>
+        bakimlar
