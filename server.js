@@ -1,12 +1,16 @@
 const express = require('express');
+const session = require('express-session');
 const app = express();
 const fs = require('fs');
 const path = require('path');
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 const DATA_FILE = 'bakimlar.json';
 
+// POST istekleri için form verilerini parse et (body-parser gibi)
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Statik dosyaları public klasöründen sun
@@ -117,9 +121,6 @@ app.get('/api/plakalar', (req, res) => {
   });
 });
 
-// POST istekleri için form verilerini parse et (body-parser gibi)
-app.use(express.urlencoded({ extended: true }));
-
 // GET /login — login formunu göster
 app.get('/login', (req, res) => {
   res.render('login', { error: null });
@@ -136,9 +137,9 @@ app.post('/login', (req, res) => {
   }
 });
 
-// Ana sayfa route'u (giriş sonrası)
+// Ana sayfa isteğinde login sayfasına yönlendir
 app.get('/', (req, res) => {
-  res.send('Ana sayfa - giriş başarılı!');
+  res.redirect('/login');
 });
 
 const PORT = process.env.PORT || 3000;
