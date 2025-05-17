@@ -9,8 +9,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const USERS = {
-  'admin': '12345',
-  'user1': 'password1'
+  'admin': '1234',
+  'user1': '1234'
 };
 
 // Statik dosyaları public klasöründen sun
@@ -28,6 +28,7 @@ app.get('/login', (req, res) => {
 
 // POST /login — giriş işlemini yap
 app.post('/login', (req, res) => {
+  console.log('Gelen login verisi:', req.body);  // Buraya eklendi
   const { username, password } = req.body;
   if (USERS[username] && USERS[username] === password) {
     // Başarılı giriş, yönlendir
