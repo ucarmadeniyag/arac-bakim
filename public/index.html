@@ -5,7 +5,7 @@
   <title>Araç Bakım Takip</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    .card {
+    #sonuclar .card {
       background: #f3f3f3;
       border: 1px solid #ddd;
       padding: 10px;
@@ -35,17 +35,13 @@
 <label for="plaka">Araç Plakası:</label>
 <input type="text" id="plaka" placeholder="Örnek: 43UU111" />
 <button id="listele">Bakımları Göster</button>
-<button id="tumBakimlarBtn">Servis Kayıtları</button>
 
 <div id="sonuclar"></div>
-<div id="tumSonuclar"></div>
 
 <script>
   const plakaInput = document.getElementById('plaka');
   const listeleBtn = document.getElementById('listele');
   const sonuclarDiv = document.getElementById('sonuclar');
-  const tumBakimlarBtn = document.getElementById('tumBakimlarBtn');
-  const tumSonuclarDiv = document.getElementById('tumSonuclar');
 
   listeleBtn.onclick = async () => {
     const plaka = plakaInput.value.trim().toUpperCase();
@@ -74,6 +70,7 @@
         `;
         sonuclarDiv.appendChild(div);
       });
+
     } catch (err) {
       sonuclarDiv.textContent = "Bakım kayıtları alınırken hata oluştu.";
       console.error(err);
@@ -88,61 +85,12 @@
       const data = await res.json();
       alert(data.message);
       if (res.ok) {
-        listeleBtn.click(); // Silme sonrası güncelle
+        listeleBtn.click(); // Silme sonrası listeyi yenile
       }
     } catch {
       alert("Silme sırasında hata oluştu.");
     }
   }
-
-  tumBakimlarBtn.onclick = async () => {
-    tumSonuclarDiv.innerHTML = "Yükleniyor...";
-    try {
-      const res = await fetch('/api/bakimlar');
-      if (!res.ok) throw new Error('Sunucu hatası');
-      const tumBakimlar = await res.json();
-
-      tumSonuclarDiv.innerHTML = '';
-
-      if (Object.keys(tumBakimlar).length === 0) {
-        tumSonuclarDiv.textContent = "Kayıtlı araç bulunamadı.";
-        return;
-      }
-
-      for (const [plaka, bakimlar] of Object.entries(tumBakimlar)) {
-        const baslik = document.createElement('h3');
-        baslik.textContent = `Araç Plakası: ${plaka}`;
-        tumSonuclarDiv.appendChild(baslik);
-
-        if (bakimlar.length === 0) {
-          const bosMesaj = document.createElement('p');
-          bosMesaj.textContent = "Bakım kaydı yok.";
-          tumSonuclarDiv.appendChild(bosMesaj);
-        } else {
-          bakimlar.forEach((kayit, index) => {
-            const div = document.createElement('div');
-            div.classList.add('card');
-            div.innerHTML = `
-              <span><strong>${kayit.tarih}</strong> - ${kayit.islem}</span>
-              <button onclick="kayitSil('${plaka}', ${index})">Sil</button>
-            `;
-            tumSonuclarDiv.appendChild(div);
-          });
-        }
-      }
-    } catch (err) {
-      tumSonuclarDiv.textContent = "Tüm kayıtlar alınırken hata oluştu.";
-      console.error(err);
-    }
-  };
-
-  window.onload = () => {
-    const plakaFromUrl = new URLSearchParams(window.location.search).get('plaka');
-    if (plakaFromUrl) {
-      plakaInput.value = plakaFromUrl.toUpperCase();
-      listeleBtn.click();
-    }
-  };
 </script>
 
 </body>
