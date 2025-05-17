@@ -41,6 +41,7 @@
 
   <div id="bakimDetay">
     <h2>Bakım Detayları</h2>
+    <button id="silButon" style="margin-bottom:10px; display:none;">Seçili Plakaya Ait Bakımları Sil</button>
     <table id="bakimTable" style="display:none;">
       <thead>
         <tr>
@@ -66,6 +67,15 @@
     const bakimEkleForm = document.getElementById('bakimEkleForm');
     const eklemeMesaji = document.getElementById('eklemeMesaji');
     const qrListe = document.getElementById('qrListe');
+    const silButon = document.getElementById('silButon');
+    let seciliPlaka = null;
+
+    // Plakalar listesine tıklandığında seçili plakayı ayarla ve bakım kayıtlarını getir
+    function plakayaTikla(plaka) {
+      seciliPlaka = plaka;
+      fetchBakimlar(plaka);
+      silButon.style.display = 'inline-block';
+    }
 
     // Plakaları çek ve listele
     async function plakalarListele() {
@@ -77,9 +87,7 @@
         plakalar.forEach(plaka => {
           const li = document.createElement('li');
           li.textContent = plaka;
-          li.addEventListener('click', () => {
-            fetchBakimlar(plaka);
-          });
+          li.addEventListener('click', () => plakayaTikla(plaka));
           plakalarUl.appendChild(li);
         });
 
@@ -174,7 +182,7 @@
           if (![...plakalarUl.children].some(li => li.textContent === plaka)) {
             const li = document.createElement('li');
             li.textContent = plaka;
-            li.addEventListener('click', () => fetchBakimlar(plaka));
+            li.addEventListener('click', () => plakayaTikla(plaka));
             plakalarUl.appendChild(li);
           }
 
@@ -190,6 +198,37 @@
         eklemeMesaji.style.color = 'red';
         eklemeMesaji.style.display = 'block';
         console.error(err);
+      }
+    });
+
+    // Silme butonuna tıklandığında bakım kayıtlarını sil
+    silButon.addEventListener('click', async () => {
+      if (!seciliPlaka) {
+        alert('Lütfen önce bir plaka seçin.');
+        return;
+      }
+      if (!confirm(`${seciliPlaka} plakalı aracın tüm bakım kayıtlarını silmek istediğinize emin misiniz?`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/bakimlar/${seciliPlaka}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          alert('Bakım kayıtları başarıyla silindi.');
+          bakimTableBody.innerHTML = '';
+          bakimTable.style.display = 'none';
+          noData.style.display = 'block';
+          silButon.style.display = 'none';
+          tumQRListele();
+        } else {
+          alert(data.message || 'Silme işlemi sırasında hata oluştu.');
+        }
+      } catch (err) {
+        alert('Sunucuya bağlanırken hata oluştu.');
       }
     });
 
