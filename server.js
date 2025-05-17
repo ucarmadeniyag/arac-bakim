@@ -116,26 +116,29 @@ app.get('/api/plakalar', (req, res) => {
     res.json(plakalar);
   });
 });
+
 // POST istekleri için form verilerini parse et (body-parser gibi)
 app.use(express.urlencoded({ extended: true }));
 
 // GET /login — login formunu göster
 app.get('/login', (req, res) => {
-  res.render('login', { error: null });  // error yoksa null gönder
+  res.render('login', { error: null });
 });
 
 // POST /login — kullanıcı doğrulaması yap
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  // Basit örnek kullanıcı doğrulama (daha gelişmiş olabilir)
   if (username === 'admin' && password === '1234') {
-    // Başarılı giriş - ana sayfaya yönlendir
-    res.redirect('/');  
+    res.redirect('/');
   } else {
-    // Hatalı giriş - login sayfasını hata mesajıyla tekrar göster
     res.render('login', { error: 'Kullanıcı adı veya şifre yanlış.' });
   }
+});
+
+// Ana sayfa route'u (giriş sonrası)
+app.get('/', (req, res) => {
+  res.send('Ana sayfa - giriş başarılı!');
 });
 
 const PORT = process.env.PORT || 3000;
