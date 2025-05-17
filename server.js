@@ -1,21 +1,18 @@
 const express = require('express');
-const session = require('express-session');
 const app = express();
 const fs = require('fs');
 const path = require('path');
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
 const DATA_FILE = 'bakimlar.json';
 
-// POST istekleri için form verilerini parse et (body-parser gibi)
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Statik dosyaları public klasöründen sun
 app.use(express.static(path.join(__dirname, 'public')));
-
+// Anasayfaya gelince login sayfasını göster
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
 // Bakım kayıtlarını plaka bazında getir
 app.get('/api/bakimlar/:plaka', (req, res) => {
   const plaka = req.params.plaka.toUpperCase();
@@ -119,27 +116,6 @@ app.get('/api/plakalar', (req, res) => {
     const plakalar = Object.keys(json);
     res.json(plakalar);
   });
-});
-
-// GET /login — login formunu göster
-app.get('/login', (req, res) => {
-  res.render('login', { error: null });
-});
-
-// POST /login — kullanıcı doğrulaması yap
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-
-  if (username === 'admin' && password === '1234') {
-    res.redirect('/');
-  } else {
-    res.render('login', { error: 'Kullanıcı adı veya şifre yanlış.' });
-  }
-});
-
-// Ana sayfa isteğinde login sayfasına yönlendir
-app.get('/', (req, res) => {
-  res.redirect('/login');
 });
 
 const PORT = process.env.PORT || 3000;
