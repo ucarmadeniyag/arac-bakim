@@ -48,20 +48,4 @@ app.delete('/api/bakimlar/:plaka/:index', (req, res) => {
 
     json[plaka].splice(index, 1); // Kaydı sil
 
-    fs.writeFile(DATA_FILE, JSON.stringify(json, null, 2), err => {
-      if (err) return res.status(500).json({ message: 'Silme işlemi başarısız' });
-      res.json({ message: 'Kayıt silindi' });
-    });
-  });
-});
-
-// Yeni bakım kaydı ekleme API
-app.post('/api/bakimlar/:plaka', (req, res) => {
-  const plaka = req.params.plaka.toUpperCase();
-  const { tarih, islem } = req.body;
-
-  if (!tarih || !islem) {
-    return res.status(400).json({ message: 'Eksik bilgi' });
-  }
-
-  fs.readFile(DATA_FILE, 'utf8', (err, data_
+    fs.writeFile(DATA_FILE, JSON.stringify(json,_
