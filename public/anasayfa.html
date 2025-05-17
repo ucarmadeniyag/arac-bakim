@@ -1,24 +1,28 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8" />
-  <title>Bakım Kırmızı - QR Kodlu Liste</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    #plakalar li { cursor: pointer; padding: 5px; border-bottom: 1px solid #ccc; }
-    #plakalar li:hover { background-color: #eee; }
-    #bakimDetay { margin-top: 20px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { padding: 8px; border: 1px solid #ccc; }
-    .qr-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; }
-    .qr-container div { text-align: center; }
-  </style>
-</head>
 <body>
-  <h1>Bakım Kırmızı - QR Kodlu Liste</h1>
+  <h1>Servis Formu</h1>
 
   <h2>Plakalar</h2>
   <ul id="plakalar"></ul>
+
+  <!-- BURAYA EKLE -->
+  <h2>Bakım Ekle</h2>
+  <form id="bakimEkleForm">
+    <label for="plakaInput">Araç Plakası:</label><br/>
+    <input type="text" id="plakaInput" name="plaka" required /><br/>
+
+    <label for="islemSelect">İşlem:</label><br/>
+    <select id="islemSelect" name="islem" required>
+      <option value="">Seçiniz</option>
+      <option value="Yağ Değişimi">Yağ Değişimi</option>
+      <option value="Filtre Değişimi">Lastik Değişimi</option>
+      <option value="Not">Fren Kontrolü</option>
+    </select><br/><br/>
+
+    <button type="submit">Bakım Ekle</button>
+  </form>
+
+  <p id="eklemeMesaji" style="color: green; display:none;"></p>
+  <!-- EKLEME SONU -->
 
   <div id="bakimDetay">
     <h2>Bakım Detayları</h2>
@@ -41,74 +45,62 @@
   </div>
 
   <script>
-    const plakalarUl = document.getElementById('plakalar');
-    const bakimTable = document.getElementById('bakimTable');
-    const bakimTableBody = bakimTable.querySelector('tbody');
-    const noData = document.getElementById('noData');
+    // ... Mevcut script burada ...
 
-    fetch('/api/plakalar')
-      .then(res => res.json())
-      .then(plakalar => {
-        plakalarUl.innerHTML = '';
-        plakalar.forEach(plaka => {
-          const li = document.createElement('li');
-          li.textContent = plaka;
-          li.addEventListener('click', () => {
-            fetchBakimlar(plaka);
-          });
-          plakalarUl.appendChild(li);
-        });
-        tumQRListele();
-      });
+    // Buraya form gönderim kodunu da ekle:
+    const bakimEkleForm = document.getElementById('bakimEkleForm');
+    const eklemeMesaji = document.getElementById('eklemeMesaji');
 
-    function fetchBakimlar(plaka) {
-      fetch(`/api/bakimlar/${plaka}`)
-        .then(res => res.json())
-        .then(bakimlar => {
-          bakimTableBody.innerHTML = '';
+    bakimEkleForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-          if (bakimlar.length === 0) {
-            bakimTable.style.display = 'none';
-            noData.style.display = 'block';
-          } else {
-            noData.style.display = 'none';
-            bakimTable.style.display = 'table';
+      let plaka = document.getElementById('plakaInput').value.trim().toUpperCase();
+      let islem = document.getElementById('islemSelect').value;
 
-            bakimlar.forEach(bakim => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = `
-                <td>${bakim.tarih}</td>
-                <td>${bakim.servis}</td>
-                <td>${bakim.detay}</td>
-              `;
-              bakimTableBody.appendChild(tr);
-            });
-          }
-        });
-    }
+      if (!plaka || !islem) {
+        alert('Lütfen tüm alanları doldurun.');
+        return;
+      }
 
-    async function tumQRListele() {
+      const tarih = new Date().toISOString().split('T')[0];
+
       try {
-        const res = await fetch('/api/plakalar');
-        const plakalar = await res.json();
-        const qrListe = document.getElementById('qrListe');
-        qrListe.innerHTML = '';
+        const res = await fetch(`/api/bakimlar/${plaka}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tarih, islem })
+        });
 
-        for (const plaka of plakalar) {
-          const qrRes = await fetch(`/api/qrcode/${plaka}`);
-          const { qrCode } = await qrRes.json();
+        const data = await res.json();
 
-          const div = document.createElement('div');
-          div.innerHTML = `
-            <div><strong>${plaka}</strong></div>
-            <img src="${qrCode}" width="100" height="100" alt="QR Kod">
-          `;
-          qrListe.appendChild(div);
+        if (res.ok) {
+          eklemeMesaji.textContent = 'Bakım kaydı başarıyla eklendi!';
+          eklemeMesaji.style.color = 'green';
+          eklemeMesaji.style.display = 'block';
+
+          bakimEkleForm.reset();
+
+          // Eğer plakalar listesinde yoksa ekle
+          if (![...plakalarUl.children].some(li => li.textContent === plaka)) {
+            const li = document.createElement('li');
+            li.textContent = plaka;
+            li.addEventListener('click', () => fetchBakimlar(plaka));
+            plakalarUl.appendChild(li);
+          }
+
+          fetchBakimlar(plaka);
+          tumQRListele();
+
+        } else {
+          eklemeMesaji.textContent = data.message || 'Bir hata oluştu!';
+          eklemeMesaji.style.color = 'red';
+          eklemeMesaji.style.display = 'block';
         }
       } catch (err) {
-        console.error('Tüm QR kodlar alınamadı:', err);
+        eklemeMesaji.textContent = 'Sunucuya bağlanırken hata oluştu.';
+        eklemeMesaji.style.color = 'red';
+        eklemeMesaji.style.display = 'block';
       }
-    }
+    });
   </script>
 </body>
-</html>
