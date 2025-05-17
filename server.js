@@ -1,97 +1,67 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8" />
-  <title>Araç Bakım Takip</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    #sonuclar .card {
-      background: #f3f3f3;
-      border: 1px solid #ddd;
-      padding: 10px;
-      margin-bottom: 8px;
-      border-radius: 5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    button {
-      background: #e74c3c;
-      border: none;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #c0392b;
-    }
-  </style>
-</head>
-<body>
+const express = require('express');
+const app = express();
+const fs = require('fs');
+const path = require('path');
 
-<h1>Araç Bakım Takip</h1>
+const DATA_FILE = 'bakimlar.json';
 
-<label for="plaka">Araç Plakası:</label>
-<input type="text" id="plaka" placeholder="Örnek: 43UU111" />
-<button id="listele">Bakımları Göster</button>
+app.use(express.json());
 
-<div id="sonuclar"></div>
+// Statik dosyaları public klasöründen sun
+app.use(express.static(path.join(__dirname, 'public')));
 
-<script>
-  const plakaInput = document.getElementById('plaka');
-  const listeleBtn = document.getElementById('listele');
-  const sonuclarDiv = document.getElementById('sonuclar');
-
-  listeleBtn.onclick = async () => {
-    const plaka = plakaInput.value.trim().toUpperCase();
-    if (!plaka) {
-      alert("Lütfen geçerli bir plaka giriniz.");
-      return;
-    }
-    sonuclarDiv.innerHTML = "Yükleniyor...";
+// Bakım kayıtlarını plaka bazında getir
+app.get('/api/bakimlar/:plaka', (req, res) => {
+  const plaka = req.params.plaka.toUpperCase();
+  fs.readFile(DATA_FILE, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ message: 'Sunucu hatası' });
+    let json;
     try {
-      const res = await fetch(`/api/bakimlar/${plaka}`);
-      if (!res.ok) throw new Error("Sunucu hatası");
-      const bakimlar = await res.json();
-
-      sonuclarDiv.innerHTML = '';
-      if (bakimlar.length === 0) {
-        sonuclarDiv.textContent = "Bu plakaya ait bakım kaydı bulunamadı.";
-        return;
-      }
-
-      bakimlar.forEach((kayit, index) => {
-        const div = document.createElement('div');
-        div.classList.add('card');
-        div.innerHTML = `
-          <span><strong>${kayit.tarih}</strong> - ${kayit.islem}</span>
-          <button onclick="kayitSil('${plaka}', ${index})">Sil</button>
-        `;
-        sonuclarDiv.appendChild(div);
-      });
-
-    } catch (err) {
-      sonuclarDiv.textContent = "Bakım kayıtları alınırken hata oluştu.";
-      console.error(err);
-    }
-  };
-
-  async function kayitSil(plaka, index) {
-    if (!confirm("Bu kaydı silmek istediğinizden emin misiniz?")) return;
-
-    try {
-      const res = await fetch(`/api/bakimlar/${plaka}/${index}`, { method: 'DELETE' });
-      const data = await res.json();
-      alert(data.message);
-      if (res.ok) {
-        listeleBtn.click(); // Silme sonrası listeyi yenile
-      }
+      json = JSON.parse(data);
     } catch {
-      alert("Silme sırasında hata oluştu.");
+      return res.status(500).json({ message: 'Veri okuma hatası' });
     }
-  }
-</script>
+    res.json(json[plaka] || []);
+  });
+});
 
-</body>
-</html>
+// Bakım kaydını silmek için API
+app.delete('/api/bakimlar/:plaka/:index', (req, res) => {
+  const plaka = req.params.plaka.toUpperCase();
+  const index = parseInt(req.params.index);
+
+  fs.readFile(DATA_FILE, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ message: 'Sunucu hatası' });
+
+    let json;
+    try {
+      json = JSON.parse(data);
+    } catch {
+      return res.status(500).json({ message: 'Veri okuma hatası' });
+    }
+
+    if (!json[plaka]) return res.status(404).json({ message: 'Plaka bulunamadı' });
+
+    if (isNaN(index) || index < 0 || index >= json[plaka].length) {
+      return res.status(400).json({ message: 'Geçersiz kayıt indeksi' });
+    }
+
+    json[plaka].splice(index, 1); // Kaydı sil
+
+    fs.writeFile(DATA_FILE, JSON.stringify(json, null, 2), err => {
+      if (err) return res.status(500).json({ message: 'Silme işlemi başarısız' });
+      res.json({ message: 'Kayıt silindi' });
+    });
+  });
+});
+
+// Yeni bakım kaydı ekleme API
+app.post('/api/bakimlar/:plaka', (req, res) => {
+  const plaka = req.params.plaka.toUpperCase();
+  const { tarih, islem } = req.body;
+
+  if (!tarih || !islem) {
+    return res.status(400).json({ message: 'Eksik bilgi' });
+  }
+
+  fs.readFile(DATA_FILE, 'utf8', (err, data_
