@@ -2,14 +2,46 @@ const express = require('express');
 const app = express();
 const fs = require('fs');
 const path = require('path');
-const QRCode = require('qrcode'); // <-- En üstte olsun
+const QRCode = require('qrcode'); // <-- QRCode en üstte
+
+const bodyParser = require('body-parser'); // login için
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const DATA_FILE = 'bakimlar.json';
 
-app.use(express.json());
-
 // Statik dosyaları public klasöründen sun
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(express.json());
+
+// -------------------- LOGIN --------------------
+
+const USER = {
+  username: 'admin',
+  password: '1234'
+};
+
+// Login sayfası (ana dizin)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// Login işlemi
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+
+  if (username === USER.username && password === USER.password) {
+    // Başarılı giriş: index.html göster
+    res.redirect('/index.html');
+  } else {
+    res.send(`
+      <h2>Hatalı kullanıcı adı veya şifre!</h2>
+      <a href="/">Geri dön</a>
+    `);
+  }
+});
+
+// --------------- API ROUTELARI ------------------
 
 // Bakım kayıtlarını plaka bazında getir
 app.get('/api/bakimlar/:plaka', (req, res) => {
@@ -115,7 +147,7 @@ app.get('/api/plakalar', (req, res) => {
   });
 });
 
-// QR kod üretme endpoint'i
+// QR kod üretme endpoint'i (orijinal haliyle duruyor)
 app.get('/api/qrcode/:plaka', (req, res) => {
   const plaka = req.params.plaka.toUpperCase();
   const url = `http://localhost:${PORT}/api/bakimlar/${plaka}`;
