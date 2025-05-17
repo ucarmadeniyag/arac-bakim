@@ -32,7 +32,7 @@ app.post('/login', (req, res) => {
   const { username, password } = req.body;
   if (USERS[username] && USERS[username] === password) {
     // Başarılı giriş, yönlendir
-    res.redirect('/dashboard.html');
+    res.redirect('/anasayfa.html');
   } else {
     res.send('Kullanıcı adı veya şifre yanlış.');
   }
