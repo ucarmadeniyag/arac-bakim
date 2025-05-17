@@ -20,12 +20,11 @@
     }
     .container {
       max-width: 800px;
-      margin: 0 auto;
+      margin: 0 auto 40px;
       background: white;
       padding: 25px 30px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
       border-radius: 12px;
-      margin-bottom: 40px;
     }
 
     /* Arama formu */
@@ -171,8 +170,14 @@
     #qrKodu {
       margin-top: 20px;
       text-align: center;
+      border: 1px solid #ccc;
+      width: 160px;
+      height: 160px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 5px;
+      background: white;
     }
-
   </style>
 </head>
 <body>
@@ -307,7 +312,7 @@
 
     } catch (err) {
       message.textContent = 'Bakım kayıtları alınırken hata oluştu.';
-      qrCode.clear(); // Hata durumunda QR kodu temizle
+      if (qrCode) qrCode.clear(); // Hata durumunda QR kodu temizle
       console.error(err);
     }
   }
@@ -359,4 +364,32 @@
     listele(plaka);
   };
 
-  // Tüm plakaları listele (backend'den)
+  // Tüm plakaları listeleme fonksiyonu (dummy, sen backend eklersin)
+  async function listeTümPlakalar() {
+    try {
+      const res = await fetch('/api/plakalar');
+      if (!res.ok) throw new Error('Plakalar alınamadı');
+      const plakalar = await res.json();
+      const listeDiv = document.createElement('div');
+      plakalarListesi.innerHTML = '<h2>Geçmişte Eklenen Plakalar</h2>';
+      plakalar.forEach(plaka => {
+        const btn = document.createElement('button');
+        btn.textContent = plaka;
+        btn.onclick = () => {
+          aramaPlakaInput.value = plaka;
+          listele(plaka);
+        };
+        plakalarListesi.appendChild(btn);
+      });
+    } catch {
+      // Hata durumunda plakalar listesi boş kalabilir
+    }
+  }
+
+  // Sayfa yüklendiğinde plakaları listele
+  window.onload = () => {
+    listeTümPlakalar();
+  };
+</script>
+</body>
+</html>
