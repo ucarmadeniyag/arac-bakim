@@ -167,6 +167,12 @@
       background-color: #1c5980;
     }
 
+    /* QR kod bölümü */
+    #qrKodu {
+      margin-top: 20px;
+      text-align: center;
+    }
+
   </style>
 </head>
 <body>
@@ -203,6 +209,9 @@
         <!-- Kayıtlar buraya gelecek -->
       </tbody>
     </table>
+
+    <!-- QR kodu gösterimi -->
+    <div id="qrKodu"></div>
   </div>
 
   <!-- Geçmişte eklenmiş plakalar -->
@@ -213,6 +222,7 @@
     </div>
   </div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
   const aramaPlakaInput = document.getElementById('aramaPlaka');
   const btnAra = document.getElementById('btnAra');
@@ -223,12 +233,30 @@
   const bakimlarListesi = document.getElementById('bakimlarListesi');
   const message = document.getElementById('message');
   const plakalarListesi = document.getElementById('plakalarListesi');
+  const qrDiv = document.getElementById('qrKodu');
+  let qrCode;
+
+  // QR kod oluşturma fonksiyonu
+  function olusturQrKod(plaka) {
+    if (qrCode) {
+      qrDiv.innerHTML = ""; // Önceki QR kodu temizle
+    }
+    // Burada URL'yi kendi domainin ile değiştir
+    const url = `${window.location.origin}?plaka=${encodeURIComponent(plaka)}`;
+
+    qrCode = new QRCode(qrDiv, {
+      text: url,
+      width: 150,
+      height: 150,
+    });
+  }
 
   // Bakımları listele
   async function listele(plaka) {
     if (!plaka) {
       bakimlarListesi.innerHTML = '';
       message.textContent = '';
+      qrDiv.innerHTML = ''; // QR kodu temizle
       return;
     }
     try {
@@ -240,6 +268,7 @@
 
       if (bakimlar.length === 0) {
         message.textContent = "Bu plakaya ait bakım kaydı bulunamadı.";
+        qrDiv.innerHTML = ''; // QR kodu temizle
         return;
       } else {
         message.textContent = '';
@@ -263,6 +292,7 @@
               message.textContent = data.message;
               listele(plaka);
               await listeTümPlakalar(); // Silince plakalar güncellenebilir
+              olusturQrKod(plaka); // QR kodu güncelle
             } else {
               alert(data.message || 'Silme işlemi başarısız');
             }
@@ -272,8 +302,12 @@
         };
         bakimlarListesi.appendChild(tr);
       });
+
+      olusturQrKod(plaka); // Bakımlar listelendiğinde QR kodu oluştur
+
     } catch (err) {
       message.textContent = 'Bakım kayıtları alınırken hata oluştu.';
+      qrDiv.innerHTML = ''; // Hata durumunda QR kodu temizle
       console.error(err);
     }
   }
@@ -304,6 +338,9 @@
         aramaPlakaInput.value = plaka; // Arama kutusunu da güncelle
         listele(plaka);
         await listeTümPlakalar();
+
+        olusturQrKod(plaka);  // QR kodu oluşturma eklendi
+
       } else {
         message.textContent = data.message || 'Kayıt eklenirken hata oluştu.';
       }
@@ -323,135 +360,3 @@
   };
 
   // Tüm plakaları listele (backend'den)
-  async function listeTümPlakalar() {
-    try {
-      // Burada backend'de plakalar listesini dönen bir endpoint olması gerekir
-      // Örneğin: GET /api/plakalar
-      const res = await fetch('/api/plakalar');
-      if (!res.ok) throw new Error('Plakalar alınamadı');
-      const plakalar = await res.json();
-
-      // Plakaları buton olarak göster
-      const container = plakalarListesi;
-      container.querySelectorAll('button.plaka-btn').forEach(btn => btn.remove());
-
-      plakalar.forEach(plaka => {
-        const btn = document.createElement('button');
-        btn.textContent = plaka;
-        btn.classList.add('plaka-btn');
-        btn.onclick = () => {
-          aramaPlakaInput.value = plaka;
-          listele(plaka);
-        };
-        container.appendChild(btn);
-      });
-    } catch (err) {
-      console.error(err);
-      // Plakalar yüklenemezse sessiz kalabiliriz ya da kullanıcıya bilgi verilebilir
-    }
-  }
-
-  // Sayfa yüklendiğinde geçmiş plakaları yükle
-  window.onload = async () => {
-    await listeTümPlakalar();
-
-    // URL parametrelerinden plaka varsa arama yap
-    const urlParams = new URLSearchParams(window.location.search);
-    const plakaFromUrl = urlParams.get('plaka');
-    if (plakaFromUrl) {
-      aramaPlakaInput.value = plakaFromUrl.toUpperCase();
-      listele(plakaFromUrl.toUpperCase());
-    }
-  };
-<!-- QR kod için div -->
-<div id="qrKodu" style="margin-top:20px;"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-<script>
-  const plakaInput = document.getElementById('plaka');
-  const listeleBtn = document.getElementById('listele');
-  const sonuclarDiv = document.getElementById('sonuclar');
-  const qrDiv = document.getElementById('qrKodu');
-  let qrCode;
-
-  function olusturQrKod(plaka) {
-    if (qrCode) {
-      qrDiv.innerHTML = ""; // Önceki QR kodu temizle
-    }
-    // Burada URL'yi kendi domainin ile değiştir
-    const url = `${window.location.origin}?plaka=${encodeURIComponent(plaka)}`;
-
-    qrCode = new QRCode(qrDiv, {
-      text: url,
-      width: 150,
-      height: 150,
-    });
-  }
-
-  listeleBtn.onclick = async () => {
-    const plaka = plakaInput.value.trim().toUpperCase();
-    if (!plaka) {
-      alert("Lütfen geçerli bir plaka giriniz.");
-      return;
-    }
-
-    // QR kod oluştur
-    olusturQrKod(plaka);
-
-    sonuclarDiv.innerHTML = "Yükleniyor...";
-    try {
-      const res = await fetch(`/api/bakimlar/${plaka}`);
-      if (!res.ok) throw new Error("Sunucu hatası");
-      const bakimlar = await res.json();
-
-      sonuclarDiv.innerHTML = '';
-      if (bakimlar.length === 0) {
-        sonuclarDiv.textContent = "Bu plakaya ait bakım kaydı bulunamadı.";
-        return;
-      }
-
-      bakimlar.forEach((kayit, index) => {
-        const div = document.createElement('div');
-        div.classList.add('card');
-        div.innerHTML = `
-          <span><strong>${kayit.tarih}</strong> - ${kayit.islem}</span>
-          <button onclick="kayitSil('${plaka}', ${index})">Sil</button>
-        `;
-        sonuclarDiv.appendChild(div);
-      });
-
-    } catch (err) {
-      sonuclarDiv.textContent = "Bakım kayıtları alınırken hata oluştu.";
-      console.error(err);
-    }
-  };
-
-  async function kayitSil(plaka, index) {
-    if (!confirm("Bu kaydı silmek istediğinizden emin misiniz?")) return;
-
-    try {
-      const res = await fetch(`/api/bakimlar/${plaka}/${index}`, { method: 'DELETE' });
-      const data = await res.json();
-      alert(data.message);
-      if (res.ok) {
-        listeleBtn.click(); // Silme sonrası listeyi yenile
-      }
-    } catch {
-      alert("Silme sırasında hata oluştu.");
-    }
-  }
-
-  // Sayfa yüklendiğinde plaka varsa hem listele hem QR oluştur
-  window.onload = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const plakaFromUrl = urlParams.get('plaka');
-    if (plakaFromUrl) {
-      plakaInput.value = plakaFromUrl.toUpperCase();
-      listeleBtn.click();
-    }
-  };
-
-
-</script>
-</body>
-</html>
