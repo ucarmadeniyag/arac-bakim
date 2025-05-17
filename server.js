@@ -10,7 +10,7 @@ app.use(express.json());
 // Statik dosyaları public klasöründen sun
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Bakım kayıtlarını plaka bazında getir
+// Belirli plakaya ait bakım kayıtlarını getir
 app.get('/api/bakimlar/:plaka', (req, res) => {
   const plaka = req.params.plaka.toUpperCase();
   fs.readFile(DATA_FILE, 'utf8', (err, data) => {
@@ -25,7 +25,7 @@ app.get('/api/bakimlar/:plaka', (req, res) => {
   });
 });
 
-// Bakım kaydını silmek için API
+// Bakım kaydı silme
 app.delete('/api/bakimlar/:plaka/:index', (req, res) => {
   const plaka = req.params.plaka.toUpperCase();
   const index = parseInt(req.params.index);
@@ -46,7 +46,7 @@ app.delete('/api/bakimlar/:plaka/:index', (req, res) => {
       return res.status(400).json({ message: 'Geçersiz kayıt indeksi' });
     }
 
-    json[plaka].splice(index, 1); // Kaydı sil
+    json[plaka].splice(index, 1);
 
     fs.writeFile(DATA_FILE, JSON.stringify(json, null, 2), err => {
       if (err) return res.status(500).json({ message: 'Silme işlemi başarısız' });
@@ -55,7 +55,7 @@ app.delete('/api/bakimlar/:plaka/:index', (req, res) => {
   });
 });
 
-// Yeni bakım kaydı ekleme API
+// Yeni bakım kaydı ekleme
 app.post('/api/bakimlar/:plaka', (req, res) => {
   const plaka = req.params.plaka.toUpperCase();
   const { tarih, islem } = req.body;
@@ -84,7 +84,7 @@ app.post('/api/bakimlar/:plaka', (req, res) => {
   });
 });
 
-// Tüm araçların bakım kayıtlarını listele
+// Tüm plakaların bakım kayıtlarını getir
 app.get('/api/bakimlar', (req, res) => {
   fs.readFile(DATA_FILE, 'utf8', (err, data) => {
     if (err) return res.status(500).json({ message: 'Sunucu hatası' });
@@ -98,7 +98,7 @@ app.get('/api/bakimlar', (req, res) => {
   });
 });
 
-// Port ayarı ve server başlatma
+// Server'ı başlat
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server ${port} portunda çalışıyor`);

@@ -5,7 +5,7 @@
   <title>Araç Bakım Takip</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    #sonuclar .card, #tumSonuclar .card {
+    .card {
       background: #f3f3f3;
       border: 1px solid #ddd;
       padding: 10px;
@@ -26,9 +26,6 @@
     button:hover {
       background: #c0392b;
     }
-    #tumSonuclar {
-      margin-top: 30px;
-    }
   </style>
 </head>
 <body>
@@ -47,6 +44,8 @@
   const plakaInput = document.getElementById('plaka');
   const listeleBtn = document.getElementById('listele');
   const sonuclarDiv = document.getElementById('sonuclar');
+  const tumBakimlarBtn = document.getElementById('tumBakimlarBtn');
+  const tumSonuclarDiv = document.getElementById('tumSonuclar');
 
   listeleBtn.onclick = async () => {
     const plaka = plakaInput.value.trim().toUpperCase();
@@ -75,7 +74,6 @@
         `;
         sonuclarDiv.appendChild(div);
       });
-
     } catch (err) {
       sonuclarDiv.textContent = "Bakım kayıtları alınırken hata oluştu.";
       console.error(err);
@@ -90,37 +88,12 @@
       const data = await res.json();
       alert(data.message);
       if (res.ok) {
-        // Eğer plaka araması yapılıyorsa yenile
-        if (plakaInput.value.trim().toUpperCase() === plaka) {
-          listeleBtn.click();
-        }
-        // Tüm kayıtlar görünüyorsa da yenile
-        if (tumSonuclarDiv.innerHTML.trim() !== '') {
-          tumBakimlarBtn.click();
-        }
+        listeleBtn.click(); // Silme sonrası güncelle
       }
     } catch {
       alert("Silme sırasında hata oluştu.");
     }
   }
-
-  // URL'den plaka parametresini alır ve otomatik arama yapar
-  function getQueryParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-  }
-
-  window.onload = () => {
-    const plakaFromUrl = getQueryParam('plaka');
-    if (plakaFromUrl) {
-      plakaInput.value = plakaFromUrl.toUpperCase();
-      listeleBtn.click();
-    }
-  };
-
-  // Tüm araçların bakım kayıtlarını listeleme
-  const tumBakimlarBtn = document.getElementById('tumBakimlarBtn');
-  const tumSonuclarDiv = document.getElementById('tumSonuclar');
 
   tumBakimlarBtn.onclick = async () => {
     tumSonuclarDiv.innerHTML = "Yükleniyor...";
@@ -160,6 +133,14 @@
     } catch (err) {
       tumSonuclarDiv.textContent = "Tüm kayıtlar alınırken hata oluştu.";
       console.error(err);
+    }
+  };
+
+  window.onload = () => {
+    const plakaFromUrl = new URLSearchParams(window.location.search).get('plaka');
+    if (plakaFromUrl) {
+      plakaInput.value = plakaFromUrl.toUpperCase();
+      listeleBtn.click();
     }
   };
 </script>
