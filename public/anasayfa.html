@@ -1,28 +1,43 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bakım Kayıtları ve Ekleme</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #plakalar li { cursor: pointer; padding: 5px; border-bottom: 1px solid #ccc; }
+    #plakalar li:hover { background-color: #eee; }
+    #bakimDetay { margin-top: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
+    .qr-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; }
+    .qr-container div { text-align: center; border: 1px solid #ccc; padding: 10px; border-radius: 5px; }
+    #eklemeMesaji { margin-top: 10px; font-weight: bold; }
+  </style>
+</head>
 <body>
-  <h1>Servis Formu</h1>
+  <h1>Bakım Kayıtları ve Servis Formu</h1>
 
   <h2>Plakalar</h2>
   <ul id="plakalar"></ul>
 
-  <!-- BURAYA EKLE -->
   <h2>Bakım Ekle</h2>
   <form id="bakimEkleForm">
     <label for="plakaInput">Araç Plakası:</label><br/>
-    <input type="text" id="plakaInput" name="plaka" required /><br/>
+    <input type="text" id="plakaInput" name="plaka" required /><br/><br/>
 
     <label for="islemSelect">İşlem:</label><br/>
     <select id="islemSelect" name="islem" required>
       <option value="">Seçiniz</option>
       <option value="Yağ Değişimi">Yağ Değişimi</option>
-      <option value="Filtre Değişimi">Lastik Değişimi</option>
-      <option value="Not">Fren Kontrolü</option>
+      <option value="Filtre Değişimi">Filtre Değişimi</option>
+      <option value="Fren Kontrolü">Fren Kontrolü</option>
     </select><br/><br/>
 
     <button type="submit">Bakım Ekle</button>
   </form>
 
-  <p id="eklemeMesaji" style="color: green; display:none;"></p>
-  <!-- EKLEME SONU -->
+  <p id="eklemeMesaji" style="display:none;"></p>
 
   <div id="bakimDetay">
     <h2>Bakım Detayları</h2>
@@ -30,8 +45,7 @@
       <thead>
         <tr>
           <th>Tarih</th>
-          <th>Servis</th>
-          <th>Detay</th>
+          <th>İşlem</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -45,17 +59,93 @@
   </div>
 
   <script>
-    // ... Mevcut script burada ...
-
-    // Buraya form gönderim kodunu da ekle:
+    const plakalarUl = document.getElementById('plakalar');
+    const bakimTable = document.getElementById('bakimTable');
+    const bakimTableBody = bakimTable.querySelector('tbody');
+    const noData = document.getElementById('noData');
     const bakimEkleForm = document.getElementById('bakimEkleForm');
     const eklemeMesaji = document.getElementById('eklemeMesaji');
+    const qrListe = document.getElementById('qrListe');
 
+    // Plakaları çek ve listele
+    async function plakalarListele() {
+      try {
+        const res = await fetch('/api/plakalar');
+        const plakalar = await res.json();
+
+        plakalarUl.innerHTML = '';
+        plakalar.forEach(plaka => {
+          const li = document.createElement('li');
+          li.textContent = plaka;
+          li.addEventListener('click', () => {
+            fetchBakimlar(plaka);
+          });
+          plakalarUl.appendChild(li);
+        });
+
+        tumQRListele();
+      } catch (err) {
+        console.error('Plakalar alınırken hata:', err);
+      }
+    }
+
+    // Seçilen plakanın bakım kayıtlarını getir
+    async function fetchBakimlar(plaka) {
+      try {
+        const res = await fetch(`/api/bakimlar/${plaka}`);
+        const bakimlar = await res.json();
+
+        bakimTableBody.innerHTML = '';
+        if (bakimlar.length === 0) {
+          bakimTable.style.display = 'none';
+          noData.style.display = 'block';
+        } else {
+          noData.style.display = 'none';
+          bakimTable.style.display = 'table';
+
+          bakimlar.forEach(bakim => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${bakim.tarih}</td>
+              <td>${bakim.islem}</td>
+            `;
+            bakimTableBody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error('Bakım kayıtları alınırken hata:', err);
+      }
+    }
+
+    // QR Kodları listele
+    async function tumQRListele() {
+      qrListe.innerHTML = '';
+      try {
+        const res = await fetch('/api/plakalar');
+        const plakalar = await res.json();
+
+        for (const plaka of plakalar) {
+          const qrRes = await fetch(`/api/qrcode/${plaka}`);
+          const { qrCode } = await qrRes.json();
+
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <div><strong>${plaka}</strong></div>
+            <img src="${qrCode}" width="100" height="100" alt="QR Kod">
+          `;
+          qrListe.appendChild(div);
+        }
+      } catch (err) {
+        console.error('QR kodları alınırken hata:', err);
+      }
+    }
+
+    // Bakım ekleme formu submit işlemi
     bakimEkleForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      let plaka = document.getElementById('plakaInput').value.trim().toUpperCase();
-      let islem = document.getElementById('islemSelect').value;
+      const plaka = document.getElementById('plakaInput').value.trim().toUpperCase();
+      const islem = document.getElementById('islemSelect').value;
 
       if (!plaka || !islem) {
         alert('Lütfen tüm alanları doldurun.');
@@ -80,7 +170,7 @@
 
           bakimEkleForm.reset();
 
-          // Eğer plakalar listesinde yoksa ekle
+          // Plakalar listesine ekle (eğer yoksa)
           if (![...plakalarUl.children].some(li => li.textContent === plaka)) {
             const li = document.createElement('li');
             li.textContent = plaka;
@@ -90,7 +180,6 @@
 
           fetchBakimlar(plaka);
           tumQRListele();
-
         } else {
           eklemeMesaji.textContent = data.message || 'Bir hata oluştu!';
           eklemeMesaji.style.color = 'red';
@@ -100,7 +189,12 @@
         eklemeMesaji.textContent = 'Sunucuya bağlanırken hata oluştu.';
         eklemeMesaji.style.color = 'red';
         eklemeMesaji.style.display = 'block';
+        console.error(err);
       }
     });
+
+    // Sayfa yüklendiğinde plakaları listele
+    plakalarListele();
   </script>
 </body>
+</html>
