@@ -1,53 +1,97 @@
-const express = require('express');
-const app = express();
-const fs = require('fs');
-const path = require('path');
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Araç Bakım Takip</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #sonuclar .card {
+      background: #f3f3f3;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    button {
+      background: #e74c3c;
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #c0392b;
+    }
+  </style>
+</head>
+<body>
 
-const DATA_FILE = 'bakimlar.json';
-app.use(express.json());
+<h1>Araç Bakım Takip</h1>
 
-// 📁 Statik dosyaları sunmak için bu satır çok önemli!
-app.use(express.static(path.join(__dirname, 'public')));
+<label for="plaka">Araç Plakası:</label>
+<input type="text" id="plaka" placeholder="Örnek: 43UU111" />
+<button id="listele">Bakımları Göster</button>
 
-// ✅ API - bakım kayıtlarını çek
-app.get('/api/bakimlar/:plaka', (req, res) => {
-  const plaka = req.params.plaka.toUpperCase();
-  fs.readFile(DATA_FILE, 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ message: 'Sunucu hatası' });
-    const json = JSON.parse(data);
-    res.json(json[plaka] || []);
-  });
-});
+<div id="sonuclar"></div>
 
-// ✅ API - bakım kaydı ekle
-app.post('/api/bakimlar/:plaka', (req, res) => {
-  const plaka = req.params.plaka.toUpperCase();
-  const { tarih, islem } = req.body;
+<script>
+  const plakaInput = document.getElementById('plaka');
+  const listeleBtn = document.getElementById('listele');
+  const sonuclarDiv = document.getElementById('sonuclar');
 
-  if (!tarih || !islem) {
-    return res.status(400).json({ message: 'Eksik bilgi' });
+  listeleBtn.onclick = async () => {
+    const plaka = plakaInput.value.trim().toUpperCase();
+    if (!plaka) {
+      alert("Lütfen geçerli bir plaka giriniz.");
+      return;
+    }
+    sonuclarDiv.innerHTML = "Yükleniyor...";
+    try {
+      const res = await fetch(`/api/bakimlar/${plaka}`);
+      if (!res.ok) throw new Error("Sunucu hatası");
+      const bakimlar = await res.json();
+
+      sonuclarDiv.innerHTML = '';
+      if (bakimlar.length === 0) {
+        sonuclarDiv.textContent = "Bu plakaya ait bakım kaydı bulunamadı.";
+        return;
+      }
+
+      bakimlar.forEach((kayit, index) => {
+        const div = document.createElement('div');
+        div.classList.add('card');
+        div.innerHTML = `
+          <span><strong>${kayit.tarih}</strong> - ${kayit.islem}</span>
+          <button onclick="kayitSil('${plaka}', ${index})">Sil</button>
+        `;
+        sonuclarDiv.appendChild(div);
+      });
+
+    } catch (err) {
+      sonuclarDiv.textContent = "Bakım kayıtları alınırken hata oluştu.";
+      console.error(err);
+    }
+  };
+
+  async function kayitSil(plaka, index) {
+    if (!confirm("Bu kaydı silmek istediğinizden emin misiniz?")) return;
+
+    try {
+      const res = await fetch(`/api/bakimlar/${plaka}/${index}`, { method: 'DELETE' });
+      const data = await res.json();
+      alert(data.message);
+      if (res.ok) {
+        listeleBtn.click(); // Silme sonrası listeyi yenile
+      }
+    } catch {
+      alert("Silme sırasında hata oluştu.");
+    }
   }
+</script>
 
-  fs.readFile(DATA_FILE, 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ message: 'Sunucu hatası' });
-    const json = JSON.parse(data);
-    if (!json[plaka]) json[plaka] = [];
-    json[plaka].push({ tarih, islem });
-
-    fs.writeFile(DATA_FILE, JSON.stringify(json, null, 2), err => {
-      if (err) return res.status(500).json({ message: 'Kayıt edilemedi' });
-      res.json({ message: 'Kayıt başarılı' });
-    });
-  });
-});
-
-// ✅ Ana sayfa: index.html (kök dizin isteği için)
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// 🔊 Sunucu başlat
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+</body>
+</html>
