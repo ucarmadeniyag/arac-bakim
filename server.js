@@ -31,8 +31,8 @@ app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
   if (username === USER.username && password === USER.password) {
-    // Başarılı giriş: index.html göster
-    res.redirect('/index.html');
+    // Başarılı giriş: anasayfa.html göster
+    res.redirect('/anasayfa.html');
   } else {
     res.send(`
       <h2>Hatalı kullanıcı adı veya şifre!</h2>
@@ -59,9 +59,9 @@ app.get('/api/bakimlar/:plaka', (req, res) => {
 });
 
 // Bakım kaydını silmek için API
-app.delete('/api/bakimlar/:plaka/:index', (req, res) => {
+app.delete('/api/bakimlar/:plaka/:anasayfa', (req, res) => {
   const plaka = req.params.plaka.toUpperCase();
-  const index = parseInt(req.params.index);
+  const anasayfa = parseInt(req.params.anasayfa);
 
   fs.readFile(DATA_FILE, 'utf8', (err, data) => {
     if (err) return res.status(500).json({ message: 'Sunucu hatası' });
@@ -75,11 +75,11 @@ app.delete('/api/bakimlar/:plaka/:index', (req, res) => {
 
     if (!json[plaka]) return res.status(404).json({ message: 'Plaka bulunamadı' });
 
-    if (isNaN(index) || index < 0 || index >= json[plaka].length) {
+    if (isNaN(anasayfa) || anasayfa < 0 || anasayfa >= json[plaka].length) {
       return res.status(400).json({ message: 'Geçersiz kayıt indeksi' });
     }
 
-    json[plaka].splice(index, 1); // Kaydı sil
+    json[plaka].splice(anasayfa, 1); // Kaydı sil
 
     fs.writeFile(DATA_FILE, JSON.stringify(json, null, 2), err => {
       if (err) return res.status(500).json({ message: 'Silme işlemi başarısız' });
