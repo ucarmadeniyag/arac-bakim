@@ -106,7 +106,58 @@
       listeleBtn.click();
     }
   };
+<button id="tumBakimlarBtn">Tüm Bakımları Göster</button>
+<div id="tumSonuclar"></div>
+
+<script>
+  const tumBakimlarBtn = document.getElementById('tumBakimlarBtn');
+  const tumSonuclarDiv = document.getElementById('tumSonuclar');
+
+  tumBakimlarBtn.onclick = async () => {
+    tumSonuclarDiv.innerHTML = "Yükleniyor...";
+    try {
+      const res = await fetch('/api/bakimlar');
+      if (!res.ok) throw new Error('Sunucu hatası');
+      const tumBakimlar = await res.json();
+
+      tumSonuclarDiv.innerHTML = '';
+
+      if (Object.keys(tumBakimlar).length === 0) {
+        tumSonuclarDiv.textContent = "Kayıtlı araç bulunamadı.";
+        return;
+      }
+
+      for (const [plaka, bakimlar] of Object.entries(tumBakimlar)) {
+        const baslik = document.createElement('h3');
+        baslik.textContent = `Araç Plakası: ${plaka}`;
+        tumSonuclarDiv.appendChild(baslik);
+
+        if (bakimlar.length === 0) {
+          const bosMesaj = document.createElement('p');
+          bosMesaj.textContent = "Bakım kaydı yok.";
+          tumSonuclarDiv.appendChild(bosMesaj);
+        } else {
+          bakimlar.forEach((kayit, index) => {
+            const div = document.createElement('div');
+            div.classList.add('card');
+            div.innerHTML = `
+              <span><strong>${kayit.tarih}</strong> - ${kayit.islem}</span>
+              <button onclick="kayitSil('${plaka}', ${index})">Sil</button>
+            `;
+            tumSonuclarDiv.appendChild(div);
+          });
+        }
+      }
+    } catch (err) {
+      tumSonuclarDiv.textContent = "Tüm kayıtlar alınırken hata oluştu.";
+      console.error(err);
+    }
+  };
+
+  // Var olan kayitSil fonksiyonunu kullanır
 </script>
+
+
 
 </body>
 </html>

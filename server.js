@@ -65,3 +65,11 @@ app.post('/api/bakimlar/:plaka', (req, res) => {
   }
 
   fs.readFile(DATA_FILE, 'utf8', (err, data_
+// Tüm araçların bakım kayıtlarını listele
+app.get('/api/bakimlar', (req, res) => {
+  fs.readFile(DATA_FILE, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ message: 'Sunucu hatası' });
+    const json = JSON.parse(data);
+    res.json(json);
+  });
+});
