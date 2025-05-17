@@ -3,10 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <title>Dashboard</title>
+  <script>
+    // Sayfa yüklendikten 3 saniye sonra ana sayfaya yönlendir
+    window.onload = function() {
+      setTimeout(function() {
+        window.location.href = '/';
+      }, 3000); // 3000 ms = 3 saniye
+    }
+  </script>
 </head>
 <body>
   <h1>Hoşgeldiniz, giriş başarılı!</h1>
-  <p>Ana sayfa burası olabilir.</p>
-  <a href="/">Çıkış</a>
+  <p>3 saniye içinde ana sayfaya yönlendirileceksiniz...</p>
+  <a href="/">Hemen ana sayfaya git</a>
 </body>
 </html>
