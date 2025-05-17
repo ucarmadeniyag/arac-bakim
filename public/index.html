@@ -5,7 +5,7 @@
   <title>Araç Bakım Takip</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    #sonuclar .card {
+    #sonuclar .card, #tumSonuclar .card {
       background: #f3f3f3;
       border: 1px solid #ddd;
       padding: 10px;
@@ -26,6 +26,9 @@
     button:hover {
       background: #c0392b;
     }
+    #tumSonuclar {
+      margin-top: 30px;
+    }
   </style>
 </head>
 <body>
@@ -35,8 +38,10 @@
 <label for="plaka">Araç Plakası:</label>
 <input type="text" id="plaka" placeholder="Örnek: 43UU111" />
 <button id="listele">Bakımları Göster</button>
+<button id="tumBakimlarBtn">Servis Kayıtları</button>
 
 <div id="sonuclar"></div>
+<div id="tumSonuclar"></div>
 
 <script>
   const plakaInput = document.getElementById('plaka');
@@ -85,14 +90,20 @@
       const data = await res.json();
       alert(data.message);
       if (res.ok) {
-        listeleBtn.click(); // Silme sonrası listeyi yenile
+        // Eğer plaka araması yapılıyorsa yenile
+        if (plakaInput.value.trim().toUpperCase() === plaka) {
+          listeleBtn.click();
+        }
+        // Tüm kayıtlar görünüyorsa da yenile
+        if (tumSonuclarDiv.innerHTML.trim() !== '') {
+          tumBakimlarBtn.click();
+        }
       }
     } catch {
       alert("Silme sırasında hata oluştu.");
     }
   }
 
-  // --- Buraya eklenen kod ---
   // URL'den plaka parametresini alır ve otomatik arama yapar
   function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -106,10 +117,8 @@
       listeleBtn.click();
     }
   };
-<button id="tumBakimlarBtn">Tüm Bakımları Göster</button>
-<div id="tumSonuclar"></div>
 
-<script>
+  // Tüm araçların bakım kayıtlarını listeleme
   const tumBakimlarBtn = document.getElementById('tumBakimlarBtn');
   const tumSonuclarDiv = document.getElementById('tumSonuclar');
 
@@ -153,11 +162,7 @@
       console.error(err);
     }
   };
-
-  // Var olan kayitSil fonksiyonunu kullanır
 </script>
-
-
 
 </body>
 </html>
