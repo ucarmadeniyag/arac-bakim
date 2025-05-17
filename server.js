@@ -9,10 +9,12 @@ app.use(express.json());
 
 // Statik dosyaları public klasöründen sun
 app.use(express.static(path.join(__dirname, 'public')));
+
 // Anasayfaya gelince login sayfasını göster
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
+
 // Bakım kayıtlarını plaka bazında getir
 app.get('/api/bakimlar/:plaka', (req, res) => {
   const plaka = req.params.plaka.toUpperCase();
