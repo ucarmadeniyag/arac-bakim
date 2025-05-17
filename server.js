@@ -88,7 +88,18 @@ app.post('/api/bakimlar/:plaka', (req, res) => {
 app.get('/api/bakimlar', (req, res) => {
   fs.readFile(DATA_FILE, 'utf8', (err, data) => {
     if (err) return res.status(500).json({ message: 'Sunucu hatası' });
-    const json = JSON.parse(data);
+    let json;
+    try {
+      json = JSON.parse(data);
+    } catch {
+      return res.status(500).json({ message: 'Veri okuma hatası' });
+    }
     res.json(json);
   });
+});
+
+// Port ayarı ve server başlatma
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server ${port} portunda çalışıyor`);
 });
