@@ -182,7 +182,7 @@
   </footer>
 
   <script>
-    const apiUrl = "http://localhost:3000/api/bakimlar";
+    const apiUrl = "https://arac-bakim.onrender.com/api/bakimlar";
 
     async function bakiyeGetir(plaka) {
       try {
@@ -245,53 +245,23 @@
 
           const url = `${window.location.origin}#plaka=${plaka}`;
           const qr = new QRious({
-async function aracEkle() {
-  const plaka = document.getElementById("yeniPlaka").value.toUpperCase().trim();
-  const tarih = document.getElementById("bakimTarihi").value;
-  const islem = document.getElementById("islem").value.trim();
-  const bilgi = document.getElementById("ekleBilgi");
+ element: document.getElementById("qrcode"),
+            value: url,
+            size: 200,
+            level: 'H',
+          });
 
-  if (!plaka || !tarih || !islem) {
-    bilgi.style.color = "#e74c3c";
-    bilgi.textContent = "Lütfen tüm alanları doldurun.";
-    return;
-  }
+        } else {
+          bilgi.style.color = "#e74c3c";
+          bilgi.textContent = data.message || "Kayıt eklenirken hata oluştu.";
+        }
 
-  try {
-    const res = await fetch(`${apiUrl}/${plaka}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tarih, islem }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      bilgi.style.color = "#27ae60";
-      bilgi.textContent = "Bakım kaydı başarıyla eklendi.";
-      document.getElementById("yeniPlaka").value = "";
-      document.getElementById("bakimTarihi").value = "";
-      document.getElementById("islem").value = "";
-      document.getElementById("qrSection").style.display = "block";
-
-      // QR kodu oluştur
-      const url = `${window.location.origin}#plaka=${plaka}`;
-      const qr = new QRious({
-        element: document.getElementById("qrcode"),
-        value: url,
-        size: 180,
-      });
-
-    } else {
-      bilgi.style.color = "#e74c3c";
-      bilgi.textContent = data.message || "Bir hata oluştu.";
-      document.getElementById("qrSection").style.display = "none";
+      } catch (err) {
+        bilgi.style.color = "#e74c3c";
+        bilgi.textContent = "Sunucu hatası: Kayıt eklenemedi.";
+      }
     }
-  } catch (error) {
-    bilgi.style.color = "#e74c3c";
-    bilgi.textContent = "Sunucuya bağlanırken hata oluştu.";
-    document.getElementById("qrSection").style.display = "none";
-  }
-}
-
+  </script>
+</body>
+</html>
            

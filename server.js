@@ -1,12 +1,45 @@
 const express = require('express');
 const app = express();
-const path = require('path');
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());  // JSON body okumak için
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Hafıza içi veritabanı (örnek)
+const bakimlarDB = {};
+
+// GET ile plakaya göre bakım kayıtlarını getir
+app.get('/api/bakimlar/:plaka', (req, res) => {
+  const plaka = req.params.plaka;
+
+  // Eğer plaka yoksa boş dizi döndür
+  if (!bakimlarDB[plaka]) {
+    bakimlarDB[plaka] = [];
+  }
+
+  res.json(bakimlarDB[plaka]);
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// POST ile yeni bakım kaydı ekle
+app.post('/api/bakimlar/:plaka', (req, res) => {
+  const plaka = req.params.plaka;
+  const { tarih, islem } = req.body;
+
+  if (!tarih || !islem) {
+    return res.status(400).json({ message: "Tarih ve işlem gereklidir" });
+  }
+
+  if (!veri[plaka]) {
+    veri[plaka] = [];
+  }
+
+  veri[plaka].push({ tarih, islem });
+
+  fs.writeFileSync('bakimlar.json', JSON.stringify(veri, null, 2));
+
+  res.status(201).json({ message: "Bakım kaydı eklendi" });
+});
+
+// Sunucu başlat
+const port = 3000;
+app.listen(port, () => {
+  console.log(`Server ${port} portunda çalışıyor...`);
+});
