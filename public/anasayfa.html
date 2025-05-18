@@ -271,7 +271,8 @@ console.log('Sunucudan gelen cevap:', text);
 
   const qrContainer = document.getElementById('qrcodeContainer');
   qrContainer.innerHTML = ''; // Önceki QR kod varsa temizle
-  const qrText = `https://arac-bakim.onrender.com/bakimlar/${plaka}`;
+  const qrText = `https://arac-bakim.onrender.com/aracbakim.html?plaka=${plaka}`;
+
   QRCode.toCanvas(qrText, { width: 200 }, (error, canvas) => {
     if (error) {
       console.error('QR kod oluşturma hatası:', error);
