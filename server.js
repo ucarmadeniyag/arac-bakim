@@ -102,7 +102,7 @@ app.post('/api/bakimlar/:plaka', (req, res) => {
     if (err) {
       if (err.code === 'ENOENT') {
         const json = {};
-        json[plaka] = [{ tarih, islem }];
+        json[plaka] = [{ tarih, islem, detay }];
         return fs.writeFile(DATA_FILE, JSON.stringify(json, null, 2), (err) => {
           if (err) return res.status(500).json({ message: 'Dosya yazma hatası' });
           res.json({ message: 'Bakım kaydı eklendi' });
@@ -122,7 +122,7 @@ app.post('/api/bakimlar/:plaka', (req, res) => {
       json[plaka] = [];
     }
 
-    json[plaka].push({ tarih, islem });
+    json[plaka].push({ tarih, islem, detay });
 
     fs.writeFile(DATA_FILE, JSON.stringify(json, null, 2), (err) => {
       if (err) return res.status(500).json({ message: 'Dosya yazma hatası' });
