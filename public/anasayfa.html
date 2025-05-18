@@ -28,6 +28,7 @@
 }
 
   </style>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
 <body>
   <h1>Bakım Kayıtları ve islem Formu</h1>
@@ -76,6 +77,7 @@
 
     <button type="submit">Bakım Ekle</button>
   </form>
+<div id="qrcodeContainer" style="margin-top: 20px;"></div>
 
   <p id="eklemeMesaji" style="display:none;"></p>
 
@@ -207,7 +209,7 @@
 console.log('Form submit event tetiklendi');
 
       const plaka = plakaInput.value.trim().toUpperCase();
-seciliPlaka = plaka;
+      seciliPlaka = plaka;
 
       const motorYagi = bakimEkleForm.elements["motorYagi"].value.trim();
       const yagFiltresi = bakimEkleForm.elements["yagFiltresi"].value.trim();
@@ -240,11 +242,11 @@ seciliPlaka = plaka;
       }
 
       const islem = islemEtiketiListesi.join(', ') || "İşlem Yapıldı";
-  const detay = islemParcalari.join(', ') || "Detay Bilgisi Yok";
-  const tarih = new Date().toISOString().split('T')[0];
-  if (!plaka) {
-    alert('Lütfen plaka girin.');
-    return;
+      const detay = islemParcalari.join(', ') || "Detay Bilgisi Yok";
+      const tarih = new Date().toISOString().split('T')[0];
+      if (!plaka) {
+        alert('Lütfen plaka girin.');
+        return;
   }
  console.log('Gönderilen veri:', JSON.stringify({ plaka, tarih, islem, detay }, null, 2));
 
@@ -262,9 +264,21 @@ console.log('Sunucudan gelen cevap:', text);
   eklemeMesaji.textContent = 'Bakım kaydı başarıyla eklendi!';
   eklemeMesaji.style.color = 'green';
   eklemeMesaji.style.display = 'block';
+
   bakimEkleForm.reset();
-await fetchBakimlar(plaka);
+  await fetchBakimlar(plaka);
   silButon.style.display = 'inline-block';
+
+  const qrContainer = document.getElementById('qrcodeContainer');
+  qrContainer.innerHTML = ''; // Önceki QR kod varsa temizle
+  const qrText = `https://siteadresiniz.com/bakimlar/${plaka}`;
+  QRCode.toCanvas(qrText, { width: 200 }, (error, canvas) => {
+    if (error) {
+      console.error('QR kod oluşturma hatası:', error);
+      return;
+    }
+    qrContainer.appendChild(canvas);
+  });
 } else {
    try {
           const data = JSON.parse(text);
