@@ -150,7 +150,8 @@ app.get('/api/plakalar', (req, res) => {
 // QR kod üretme endpoint'i (orijinal haliyle duruyor)
 app.get('/api/qrcode/:plaka', (req, res) => {
   const plaka = req.params.plaka.toUpperCase();
-  const url = `http://localhost:${PORT}/api/bakimlar/${plaka}`;
+const host = req.get('host');  // örn: localhost:3000 veya 192.168.x.x:3000
+const url = `http://${host}/api/bakimlar/${plaka}`;
 
   QRCode.toDataURL(url, (err, qrCodeDataUrl) => {
     if (err) return res.status(500).json({ message: 'QR kod oluşturulamadı' });
