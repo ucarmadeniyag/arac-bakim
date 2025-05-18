@@ -221,7 +221,8 @@ const tarih = new Date().toISOString().split('T')[0];
     alert('Lütfen plaka girin.');
     return;
   }
- console.log('Gönderilen veri:', { tarih, servis, detay, plaka });
+ console.log('Gönderilen veri:', JSON.stringify({ plaka, tarih, servis, detay }, null, 2));
+
   try {
     const res = await fetch(`/api/bakimlar/${plaka}`, {
       method: 'POST',
@@ -229,8 +230,8 @@ const tarih = new Date().toISOString().split('T')[0];
       bbody: JSON.stringify({ plaka, tarih, servis, detay })
     });
 
-    const data = await res.json();
-console.log('Sunucudan gelen cevap:', data);
+const text = await res.text(); 
+console.log('Sunucudan gelen cevap:', text);
     if (res.ok) {
       eklemeMesaji.textContent = 'Bakım kaydı başarıyla eklendi!';
       eklemeMesaji.style.color = 'green';
