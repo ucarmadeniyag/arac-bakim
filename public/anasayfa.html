@@ -98,15 +98,37 @@
           noData.style.display = 'none';
           bakimTable.style.display = 'table';
 
-          bakimlar.forEach(bakim => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${bakim.tarih}</td>
-              <td>${bakim.islem}</td>
-            `;
-            bakimTableBody.appendChild(tr);
-          });
-        }
+       bakimlar.forEach((bakim, index) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${bakim.tarih}</td>
+    <td>${bakim.islem}</td>
+    <td><button class="silKayitBtn" data-index="${index}">Sil</button></td>
+  `;
+  bakimTableBody.appendChild(tr);
+});
+document.querySelectorAll('.silKayitBtn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const index = btn.getAttribute('data-index');
+    if (!confirm(`Bu bakım kaydını silmek istediğinize emin misiniz?`)) return;
+
+    try {
+      const res = await fetch(`/api/bakimlar/${seciliPlaka}/${index}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        alert('Bakım kaydı silindi.');
+        fetchBakimlar(seciliPlaka); // listeyi yenile
+      } else {
+        const data = await res.json();
+        alert('Silme hatası: ' + (data.message || 'Bilinmeyen hata'));
+      }
+    } catch (err) {
+      alert('Sunucu hatası oluştu.');
+    }
+  });
+});
+
       } catch (err) {
         console.error('Bakım kayıtları alınırken hata:', err);
       }
@@ -116,11 +138,8 @@
   try {
     const res = await fetch(`/api/qrcode/${plaka}`);
     const data = await res.json();
-    if (data.qrCode.startsWith('data:image')) {
-      qrKodImg.src = data.qrCode;  // Eğer tam data URL ise direkt atama
-    } else {
-      qrKodImg.src = 'data:image/png;base64,' + data.qrCode;  // Değilse base64 string olarak ekle
-    }
+    console.log('QR kod data:', data.qrCode); // Burada ne geliyor kontrol et
+    qrKodImg.src = data.qrCode;  // Direkt atama, backend zaten tam data URL veriyor
   } catch (err) {
     console.error('QR kod alınırken hata:', err);
   }
