@@ -2,7 +2,6 @@ const express = require('express');
 const app = express();
 const fs = require('fs');
 const path = require('path');
-const QRCode = require('qrcode'); // <-- QRCode en üstte
 
 const bodyParser = require('body-parser'); // login için
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -144,18 +143,6 @@ app.get('/api/plakalar', (req, res) => {
     }
     const plakalar = Object.keys(json);
     res.json(plakalar);
-  });
-});
-
-// QR kod üretme endpoint'i (orijinal haliyle duruyor)
-app.get('/api/qrcode/:plaka', (req, res) => {
-  const plaka = req.params.plaka.toUpperCase();
-const host = req.get('host');  // örn: localhost:3000 veya 192.168.x.x:3000
-const url = `http://${host}/api/bakimlar/${plaka}`;
-
-  QRCode.toDataURL(url, (err, qrCodeDataUrl) => {
-    if (err) return res.status(500).json({ message: 'QR kod oluşturulamadı' });
-    res.json({ qrCode: qrCodeDataUrl });
   });
 });
 

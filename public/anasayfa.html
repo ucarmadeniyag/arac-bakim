@@ -55,11 +55,6 @@
       <tbody></tbody>
     </table>
     <p id="noData" style="display:none;">Seçilen plaka için bakım kaydı bulunamadı.</p>
-
-    <div id="seciliPlakaQrKod" style="margin-top: 20px;">
-      <h3>Seçili Plaka QR Kodu</h3>
-      <img id="qrKodImg" alt="QR Kod" style="width: 150px;" />
-    </div>
   </div>
 
   <script>
@@ -70,17 +65,14 @@
     const bakimEkleForm = document.getElementById('bakimEkleForm');
     const eklemeMesaji = document.getElementById('eklemeMesaji');
     const silButon = document.getElementById('silButon');
-    const qrKodImg = document.getElementById('qrKodImg');
 
     let seciliPlaka = null;
 
-    // Plaka input değiştiğinde verileri getir
     plakaInput.addEventListener('change', () => {
       const plaka = plakaInput.value.trim().toUpperCase();
       if (!plaka) return;
       seciliPlaka = plaka;
       fetchBakimlar(plaka);
-      fetchQrKod(plaka);
       silButon.style.display = 'inline-block';
       eklemeMesaji.style.display = 'none';
     });
@@ -98,53 +90,42 @@
           noData.style.display = 'none';
           bakimTable.style.display = 'table';
 
-       bakimlar.forEach((bakim, index) => {
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td>${bakim.tarih}</td>
-    <td>${bakim.islem}</td>
-    <td><button class="silKayitBtn" data-index="${index}">Sil</button></td>
-  `;
-  bakimTableBody.appendChild(tr);
-});
-document.querySelectorAll('.silKayitBtn').forEach(btn => {
-  btn.addEventListener('click', async () => {
-    const index = btn.getAttribute('data-index');
-    if (!confirm(`Bu bakım kaydını silmek istediğinize emin misiniz?`)) return;
+          bakimlar.forEach((bakim, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${bakim.tarih}</td>
+              <td>${bakim.islem}</td>
+              <td><button class="silKayitBtn" data-index="${index}">Sil</button></td>
+            `;
+            bakimTableBody.appendChild(tr);
+          });
 
-    try {
-      const res = await fetch(`/api/bakimlar/${seciliPlaka}/${index}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        alert('Bakım kaydı silindi.');
-        fetchBakimlar(seciliPlaka); // listeyi yenile
-      } else {
-        const data = await res.json();
-        alert('Silme hatası: ' + (data.message || 'Bilinmeyen hata'));
-      }
-    } catch (err) {
-      alert('Sunucu hatası oluştu.');
-    }
-  });
-});
+          document.querySelectorAll('.silKayitBtn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const index = btn.getAttribute('data-index');
+              if (!confirm(`Bu bakım kaydını silmek istediğinize emin misiniz?`)) return;
 
+              try {
+                const res = await fetch(`/api/bakimlar/${seciliPlaka}/${index}`, {
+                  method: 'DELETE'
+                });
+                if (res.ok) {
+                  alert('Bakım kaydı silindi.');
+                  fetchBakimlar(seciliPlaka);
+                } else {
+                  const data = await res.json();
+                  alert('Silme hatası: ' + (data.message || 'Bilinmeyen hata'));
+                }
+              } catch (err) {
+                alert('Sunucu hatası oluştu.');
+              }
+            });
+          });
+        }
       } catch (err) {
         console.error('Bakım kayıtları alınırken hata:', err);
       }
     }
-
-   async function fetchQrKod(plaka) {
-  try {
-    const res = await fetch(`/api/qrcode/${plaka}`);
-    const data = await res.json();
-    console.log('QR kod data:', data.qrCode); // Burada ne geliyor kontrol et
-    qrKodImg.src = data.qrCode;  // Direkt atama, backend zaten tam data URL veriyor
-  } catch (err) {
-    console.error('QR kod alınırken hata:', err);
-  }
-}
-
 
     bakimEkleForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -195,7 +176,6 @@ document.querySelectorAll('.silKayitBtn').forEach(btn => {
           eklemeMesaji.style.display = 'block';
           bakimEkleForm.reset();
           fetchBakimlar(plaka);
-          fetchQrKod(plaka);  // Her bakım eklendiğinde QR kodu tekrar getir
           silButon.style.display = 'inline-block';
         } else {
           eklemeMesaji.textContent = data.message || 'Bir hata oluştu!';
@@ -209,27 +189,29 @@ document.querySelectorAll('.silKayitBtn').forEach(btn => {
       }
     });
 
-silButon.addEventListener('click', async () => {
-  if (!seciliPlaka) {
-    alert('Lütfen önce bir plaka girin.');
-    return;
-  }
-  if (!confirm(`${seciliPlaka} plakalı aracın tüm bakım kayıtları silinecek, emin misiniz?`)) return;
+    silButon.addEventListener('click', async () => {
+      if (!seciliPlaka) {
+        alert('Lütfen önce bir plaka girin.');
+        return;
+      }
+      if (!confirm(`${seciliPlaka} plakalı aracın tüm bakım kayıtları silinecek, emin misiniz?`)) return;
 
-  try {
-    const res = await fetch(`/api/bakimlar/${seciliPlaka}`, { method: 'DELETE' });
-    if (res.ok) {
-      alert('Bakım kayıtları silindi.');
-      bakimTableBody.innerHTML = '';
-      bakimTable.style.display = 'none';
-      noData.style.display = 'block';
-      silButon.style.display = 'none';
-      eklemeMesaji.style.display = 'none';
-      qrKodImg.src = '';  // İstersen QR kod burada temizlenebilir ya da sabit bırakılabilir
-    } else {
-      alert('Silme işleminde hata oluştu.');
-    }
-  } catch (err) {
-    alert('Sunucuya bağlanırken hata oluştu.');
-  }
-});
+      try {
+        const res = await fetch(`/api/bakimlar/${seciliPlaka}`, { method: 'DELETE' });
+        if (res.ok) {
+          alert('Bakım kayıtları silindi.');
+          bakimTableBody.innerHTML = '';
+          bakimTable.style.display = 'none';
+          noData.style.display = 'block';
+          silButon.style.display = 'none';
+          eklemeMesaji.style.display = 'none';
+        } else {
+          alert('Silme işleminde hata oluştu.');
+        }
+      } catch (err) {
+        alert('Sunucuya bağlanırken hata oluştu.');
+      }
+    });
+  </script>
+</body>
+</html>
