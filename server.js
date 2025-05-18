@@ -92,9 +92,9 @@ app.delete('/api/bakimlar/:plaka/:anasayfa', (req, res) => {
 // Yeni bakım kaydı ekleme API
 app.post('/api/bakimlar/:plaka', (req, res) => {
   const plaka = req.params.plaka.toUpperCase();
-  const { tarih, Servis } = req.body;
+  const { tarih, servis, detay } = req.body;
 
-  if (!tarih || !Servis) {
+  if (!tarih || !servis) {
     return res.status(400).json({ message: 'Eksik bilgi' });
   }
 
@@ -102,7 +102,7 @@ app.post('/api/bakimlar/:plaka', (req, res) => {
     if (err) {
       if (err.code === 'ENOENT') {
         const json = {};
-        json[plaka] = [{ tarih, Servis }];
+        json[plaka] = [{ tarih, servis }];
         return fs.writeFile(DATA_FILE, JSON.stringify(json, null, 2), (err) => {
           if (err) return res.status(500).json({ message: 'Dosya yazma hatası' });
           res.json({ message: 'Bakım kaydı eklendi' });
@@ -122,7 +122,7 @@ app.post('/api/bakimlar/:plaka', (req, res) => {
       json[plaka] = [];
     }
 
-    json[plaka].push({ tarih, Servis });
+    json[plaka].push({ tarih, servis });
 
     fs.writeFile(DATA_FILE, JSON.stringify(json, null, 2), (err) => {
       if (err) return res.status(500).json({ message: 'Dosya yazma hatası' });

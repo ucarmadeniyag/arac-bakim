@@ -227,7 +227,7 @@ const tarih = new Date().toISOString().split('T')[0];
     const res = await fetch(`/api/bakimlar/${plaka}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      bbody: JSON.stringify({ plaka, tarih, servis, detay })
+      body: JSON.stringify({ plaka, tarih, servis, detay })
     });
 
 const text = await res.text(); 
