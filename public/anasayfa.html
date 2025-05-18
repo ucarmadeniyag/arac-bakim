@@ -265,11 +265,10 @@ console.log('Form submit event tetiklendi');
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plaka, tarih, islem, detay })
     });
-
-const text = await res.text(); 
+const text = await res.text();
 console.log('Sunucudan gelen cevap:', text);
 
- if (res.ok) {
+if (res.ok) {
   eklemeMesaji.textContent = 'Bakım kaydı başarıyla eklendi!';
   eklemeMesaji.style.color = 'green';
   eklemeMesaji.style.display = 'block';
@@ -278,70 +277,76 @@ console.log('Sunucudan gelen cevap:', text);
   await fetchBakimlar(plaka);
   silButon.style.display = 'inline-block';
 
-const qrContainer = document.getElementById('qrcodeContainer');
-qrContainer.innerHTML = ''; // Önceki QR kod temizleniyor
+  const qrContainer = document.getElementById('qrcodeContainer');
+  qrContainer.innerHTML = ''; // Önceki QR kod temizleniyor
 
-const qrWrapper = document.createElement('div');
-qrWrapper.id = 'qrPrintArea';
-qrWrapper.style.border = '1px solid #ccc';
-qrWrapper.style.padding = '10px';
-qrWrapper.style.display = 'inline-block';
-qrWrapper.style.textAlign = 'center';
+  const qrWrapper = document.createElement('div');
+  qrWrapper.id = 'qrPrintArea';
+  qrWrapper.style.border = '1px solid #ccc';
+  qrWrapper.style.padding = '10px';
+  qrWrapper.style.display = 'inline-block';
+  qrWrapper.style.textAlign = 'center';
 
-const qrText = `https://arac-bakim.onrender.com/aracbakim.html?plaka=${plaka}`;
+  const qrText = `https://arac-bakim.onrender.com/aracbakim.html?plaka=${plaka}`;
 
-QRCode.toCanvas(qrText, { width: 200 }, (error, canvas) => {
-  if (error) {
-    console.error('QR kod oluşturma hatası:', error);
-    return;
+  QRCode.toCanvas(qrText, { width: 200 }, (error, canvas) => {
+    if (error) {
+      console.error('QR kod oluşturma hatası:', error);
+      return;
+    }
+
+    qrWrapper.appendChild(canvas);
+
+    const label = document.createElement('p');
+    label.textContent = `${plaka} plakalı araç QR kodu`;
+    label.style.marginTop = '10px';
+    qrWrapper.appendChild(label);
+
+    const printBtn = document.createElement('button');
+    printBtn.textContent = 'Yazdır';
+    printBtn.style.marginTop = '10px';
+    printBtn.onclick = () => {
+      const printWindow = window.open('', '', 'width=400,height=400');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>QR Kod Yazdır</title>
+          </head>
+          <body style="text-align:center; font-family:sans-serif;">
+            ${qrWrapper.innerHTML}
+            <script>
+              window.onload = function() {
+                window.print();
+                window.onafterprint = function() { window.close(); };
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    };
+
+    qrWrapper.appendChild(printBtn);
+    qrContainer.appendChild(qrWrapper);
+  });
+}
+}
+ else {
+  try {
+    const data = JSON.parse(text);
+    eklemeMesaji.textContent = data.message || 'Bir hata oluştu!';
+  } catch (err) {
+    eklemeMesaji.textContent = 'Bir hata oluştu!';
   }
 
-  qrWrapper.appendChild(canvas);
+  eklemeMesaji.style.color = 'red';
+  eklemeMesaji.style.display = 'block';
+}
 
-  const label = document.createElement('p');
-  label.textContent = `${plaka} plakalı araç QR kodu`;
-  label.style.marginTop = '10px';
-  qrWrapper.appendChild(label);
 
-  const printBtn = document.createElement('button');
-  printBtn.textContent = 'Yazdır';
-  printBtn.style.marginTop = '10px';
-  printBtn.onclick = () => {
-    const printWindow = window.open('', '', 'width=400,height=400');
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>QR Kod Yazdır</title>
-        </head>
-        <body style="text-align:center; font-family:sans-serif;">
-          ${qrWrapper.innerHTML}
-          <script>
-            window.onload = function() {
-              window.print();
-              window.onafterprint = function() { window.close(); };
-            };
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  };
 
-  qrWrapper.appendChild(printBtn);
-  qrContainer.appendChild(qrWrapper);
-});
+  
 
-} else {
-   try {
-          const data = JSON.parse(text);
-          eklemeMesaji.textContent = data.message || 'Bir hata oluştu!';
-        } catch (err) {
-          eklemeMesaji.textContent = 'Bir hata oluştu!';
-        }
-
-        eklemeMesaji.style.color = 'red';
-        eklemeMesaji.style.display = 'block';
-      }
 
     } catch (error) {
       alert('Sunucuya bağlanırken hata oluştu: ' + error.message);
