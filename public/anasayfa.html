@@ -26,7 +26,16 @@
   flex: 1;
   min-width: 150px;
 }
-
+ button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
   </style>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
@@ -269,17 +278,59 @@ console.log('Sunucudan gelen cevap:', text);
   await fetchBakimlar(plaka);
   silButon.style.display = 'inline-block';
 
-  const qrContainer = document.getElementById('qrcodeContainer');
-  qrContainer.innerHTML = ''; // Önceki QR kod varsa temizle
-  const qrText = `https://arac-bakim.onrender.com/aracbakim.html?plaka=${plaka}`;
+const qrContainer = document.getElementById('qrcodeContainer');
+qrContainer.innerHTML = ''; // Önceki QR kod temizleniyor
 
-  QRCode.toCanvas(qrText, { width: 200 }, (error, canvas) => {
-    if (error) {
-      console.error('QR kod oluşturma hatası:', error);
-      return;
-    }
-    qrContainer.appendChild(canvas);
-  });
+const qrWrapper = document.createElement('div');
+qrWrapper.id = 'qrPrintArea';
+qrWrapper.style.border = '1px solid #ccc';
+qrWrapper.style.padding = '10px';
+qrWrapper.style.display = 'inline-block';
+qrWrapper.style.textAlign = 'center';
+
+const qrText = `https://arac-bakim.onrender.com/aracbakim.html?plaka=${plaka}`;
+
+QRCode.toCanvas(qrText, { width: 200 }, (error, canvas) => {
+  if (error) {
+    console.error('QR kod oluşturma hatası:', error);
+    return;
+  }
+
+  qrWrapper.appendChild(canvas);
+
+  const label = document.createElement('p');
+  label.textContent = `${plaka} plakalı araç QR kodu`;
+  label.style.marginTop = '10px';
+  qrWrapper.appendChild(label);
+
+  const printBtn = document.createElement('button');
+  printBtn.textContent = 'Yazdır';
+  printBtn.style.marginTop = '10px';
+  printBtn.onclick = () => {
+    const printWindow = window.open('', '', 'width=400,height=400');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>QR Kod Yazdır</title>
+        </head>
+        <body style="text-align:center; font-family:sans-serif;">
+          ${qrWrapper.innerHTML}
+          <script>
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() { window.close(); };
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
+  qrWrapper.appendChild(printBtn);
+  qrContainer.appendChild(qrWrapper);
+});
+
 } else {
    try {
           const data = JSON.parse(text);
