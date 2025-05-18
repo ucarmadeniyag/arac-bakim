@@ -5,8 +5,6 @@
   <title>Bakım Kayıtları ve Servis Formu</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
-    #plakalar li { cursor: pointer; padding: 5px; border-bottom: 1px solid #ccc; }
-    #plakalar li:hover { background-color: #eee; }
     #bakimDetay { margin-top: 20px; }
     table { border-collapse: collapse; width: 100%; margin-top: 10px; }
     th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
@@ -16,32 +14,28 @@
 <body>
   <h1>Bakım Kayıtları ve Servis Formu</h1>
 
-  <h2>Plakalar</h2>
-  <ul id="plakalar"></ul>
+  <h2>Plaka Seçimi</h2>
+  <input type="text" id="plakaInput" placeholder="Araç Plakası Girin" style="text-transform: uppercase;" />
 
   <h2>Bakım Ekle</h2>
   <form id="bakimEkleForm">
-    <label for="plakaInput">Araç Plakası:</label><br/>
-    <input type="text" id="plakaInput" name="plaka" required /><br/><br/>
+    <label>1-) Motor Yağı:</label><br/>
+    <input type="text" name="motorYagi" /><br/><br/>
 
-    
-<label>1-) Motor Yağı:</label><br/>
-<input type="text" name="motorYagi" /><br/><br/>
+    <label>2-) Yağ Filtresi:</label><br/>
+    <input type="text" name="yagFiltresi" /><br/><br/>
 
-<label>2-) Yağ Filtresi:</label><br/>
-<input type="text" name="yagFiltresi" /><br/><br/>
+    <label>3-) Hava Filtresi:</label><br/>
+    <input type="text" name="havaFiltresi" /><br/><br/>
 
-<label>3-) Hava Filtresi:</label><br/>
-<input type="text" name="havaFiltresi" /><br/><br/>
+    <label>4-) Polen Filtresi:</label><br/>
+    <input type="text" name="polenFiltresi" /><br/><br/>
 
-<label>4-) Polen Filtresi:</label><br/>
-<input type="text" name="polenFiltresi" /><br/><br/>
+    <label>5-) Yakıt Filtresi:</label><br/>
+    <input type="text" name="yakitFiltresi" /><br/><br/>
 
-<label>5-) Yakıt Filtresi:</label><br/>
-<input type="text" name="yakitFiltresi" /><br/><br/>
-
-<label>6-) Diğer:</label><br/>
-<input type="text" name="diger" /><br/><br/>
+    <label>6-) Diğer:</label><br/>
+    <input type="text" name="diger" /><br/><br/>
 
     <button type="submit">Bakım Ekle</button>
   </form>
@@ -61,54 +55,35 @@
       <tbody></tbody>
     </table>
     <p id="noData" style="display:none;">Seçilen plaka için bakım kaydı bulunamadı.</p>
+
+    <div id="seciliPlakaQrKod" style="margin-top: 20px;">
+      <h3>Seçili Plaka QR Kodu</h3>
+      <img id="qrKodImg" alt="QR Kod" style="width: 150px;" />
+    </div>
   </div>
 
   <script>
-    const plakalarUl = document.getElementById('plakalar');
+    const plakaInput = document.getElementById('plakaInput');
     const bakimTable = document.getElementById('bakimTable');
     const bakimTableBody = bakimTable.querySelector('tbody');
     const noData = document.getElementById('noData');
     const bakimEkleForm = document.getElementById('bakimEkleForm');
     const eklemeMesaji = document.getElementById('eklemeMesaji');
     const silButon = document.getElementById('silButon');
+    const qrKodImg = document.getElementById('qrKodImg');
+
     let seciliPlaka = null;
 
-    function plakayaTikla(plaka) {
+    // Plaka input değiştiğinde verileri getir
+    plakaInput.addEventListener('change', () => {
+      const plaka = plakaInput.value.trim().toUpperCase();
+      if (!plaka) return;
       seciliPlaka = plaka;
       fetchBakimlar(plaka);
+      fetchQrKod(plaka);
       silButon.style.display = 'inline-block';
-    }
-
-    async function plakalarListele() {
-      try {
-        const res = await fetch('/api/plakalar');
-        const plakalar = await res.json();
-
-        plakalarUl.innerHTML = '';
-      plakalar.forEach(plaka => {
-  const li = document.createElement('li');
-  li.style.marginBottom = '10px';
-
-  const plakaYazi = document.createElement('div');
-  plakaYazi.textContent = plaka;
-  plakaYazi.style.cursor = 'pointer';
-  plakaYazi.addEventListener('click', () => plakayaTikla(plaka));
-
-  const qrImg = document.createElement('img');
-  qrImg.src = `/api/qrcode/${plaka}`;
-  qrImg.alt = `${plaka} QR Kodu`;
-  qrImg.style.width = '100px';
-  qrImg.style.marginTop = '5px';
-
-  li.appendChild(plakaYazi);
-  li.appendChild(qrImg);
-  plakalarUl.appendChild(li);
-});
-
-      } catch (err) {
-        console.error('Plakalar alınırken hata:', err);
-      }
-    }
+      eklemeMesaji.style.display = 'none';
+    });
 
     async function fetchBakimlar(plaka) {
       try {
@@ -137,37 +112,47 @@
       }
     }
 
+    async function fetchQrKod(plaka) {
+      try {
+        const res = await fetch(`/api/qrcode/${plaka}`);
+        const data = await res.json();
+        qrKodImg.src = data.qrCode;
+      } catch (err) {
+        console.error('QR kod alınırken hata:', err);
+      }
+    }
+
     bakimEkleForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const plaka = document.getElementById('plakaInput').value.trim().toUpperCase();
-     const motorYagi = bakimEkleForm.elements["motorYagi"].value.trim();
-const yagFiltresi = bakimEkleForm.elements["yagFiltresi"].value.trim();
-const havaFiltresi = bakimEkleForm.elements["havaFiltresi"].value.trim();
-const polenFiltresi = bakimEkleForm.elements["polenFiltresi"].value.trim();
-const yakitFiltresi = bakimEkleForm.elements["yakitFiltresi"].value.trim();
-const diger = bakimEkleForm.elements["diger"].value.trim();
+      const plaka = plakaInput.value.trim().toUpperCase();
 
-const islemParcalari = [
-  motorYagi && `Motor Yağı: ${motorYagi}`,
-  yagFiltresi && `Yağ Filtresi: ${yagFiltresi}`,
-  havaFiltresi && `Hava Filtresi: ${havaFiltresi}`,
-  polenFiltresi && `Polen Filtresi: ${polenFiltresi}`,
-  yakitFiltresi && `Yakıt Filtresi: ${yakitFiltresi}`,
-  diger && `Diğer: ${diger}`
-].filter(Boolean);
+      const motorYagi = bakimEkleForm.elements["motorYagi"].value.trim();
+      const yagFiltresi = bakimEkleForm.elements["yagFiltresi"].value.trim();
+      const havaFiltresi = bakimEkleForm.elements["havaFiltresi"].value.trim();
+      const polenFiltresi = bakimEkleForm.elements["polenFiltresi"].value.trim();
+      const yakitFiltresi = bakimEkleForm.elements["yakitFiltresi"].value.trim();
+      const diger = bakimEkleForm.elements["diger"].value.trim();
 
-if (islemParcalari.length === 0) {
-  alert('En az bir işlem alanı doldurulmalı.');
-  return;
-}
+      const islemParcalari = [
+        motorYagi && `Motor Yağı: ${motorYagi}`,
+        yagFiltresi && `Yağ Filtresi: ${yagFiltresi}`,
+        havaFiltresi && `Hava Filtresi: ${havaFiltresi}`,
+        polenFiltresi && `Polen Filtresi: ${polenFiltresi}`,
+        yakitFiltresi && `Yakıt Filtresi: ${yakitFiltresi}`,
+        diger && `Diğer: ${diger}`
+      ].filter(Boolean);
 
-const islem = islemParcalari.join(', ');
+      if (islemParcalari.length === 0) {
+        alert('En az bir işlem alanı doldurulmalı.');
+        return;
+      }
 
+      const islem = islemParcalari.join(', ');
       const tarih = new Date().toISOString().split('T')[0];
 
-      if (!plaka || !islem) {
-        alert('Lütfen tüm alanları doldurun.');
+      if (!plaka) {
+        alert('Lütfen plaka girin.');
         return;
       }
 
@@ -185,11 +170,9 @@ const islem = islemParcalari.join(', ');
           eklemeMesaji.style.color = 'green';
           eklemeMesaji.style.display = 'block';
           bakimEkleForm.reset();
-
-         await plakalarListele();
-
-
           fetchBakimlar(plaka);
+          fetchQrKod(plaka);  // Her bakım eklendiğinde QR kodu tekrar getir
+          silButon.style.display = 'inline-block';
         } else {
           eklemeMesaji.textContent = data.message || 'Bir hata oluştu!';
           eklemeMesaji.style.color = 'red';
@@ -202,36 +185,27 @@ const islem = islemParcalari.join(', ');
       }
     });
 
-    silButon.addEventListener('click', async () => {
-      if (!seciliPlaka) {
-        alert('Lütfen önce bir plaka seçin.');
-        return;
-      }
-      if (!confirm(`${seciliPlaka} plakalı aracın tüm bakım kayıtlarını silmek istediğinize emin misiniz?`)) {
-        return;
-      }
+silButon.addEventListener('click', async () => {
+  if (!seciliPlaka) {
+    alert('Lütfen önce bir plaka girin.');
+    return;
+  }
+  if (!confirm(`${seciliPlaka} plakalı aracın tüm bakım kayıtları silinecek, emin misiniz?`)) return;
 
-      try {
-        const res = await fetch(`/api/bakimlar/${seciliPlaka}`, {
-          method: 'DELETE',
-        });
-        const data = await res.json();
-
-        if (res.ok) {
-          alert('Bakım kayıtları başarıyla silindi.');
-          bakimTableBody.innerHTML = '';
-          bakimTable.style.display = 'none';
-          noData.style.display = 'block';
-          silButon.style.display = 'none';
-        } else {
-          alert(data.message || 'Silme işlemi sırasında hata oluştu.');
-        }
-      } catch (err) {
-        alert('Sunucuya bağlanırken hata oluştu.');
-      }
-    });
-
-    plakalarListele();
-  </script>
-</body>
-</html>
+  try {
+    const res = await fetch(`/api/bakimlar/${seciliPlaka}`, { method: 'DELETE' });
+    if (res.ok) {
+      alert('Bakım kayıtları silindi.');
+      bakimTableBody.innerHTML = '';
+      bakimTable.style.display = 'none';
+      noData.style.display = 'block';
+      silButon.style.display = 'none';
+      eklemeMesaji.style.display = 'none';
+      qrKodImg.src = '';  // İstersen QR kod burada temizlenebilir ya da sabit bırakılabilir
+    } else {
+      alert('Silme işleminde hata oluştu.');
+    }
+  } catch (err) {
+    alert('Sunucuya bağlanırken hata oluştu.');
+  }
+});
