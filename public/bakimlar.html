@@ -82,13 +82,37 @@
 
             bakimlar.forEach(bakim => {
               const tr = document.createElement('tr');
-              tr.innerHTML = `
-                <td>${bakim.tarih}</td>
-                <td>${bakim.servis}</td>
-                <td>${bakim.detay}</td>
-              `;
-              bakimTableBody.appendChild(tr);
-            });
+             const detaylar = {
+    "Motor Yağı": "",
+    "Yağ Filtresi": "",
+    "Hava Filtresi": "",
+    "Polen Filtresi": "",
+    "Yakıt Filtresi": "",
+    "Diğer": ""
+  };
+
+  // Detayları ayrıştır (örnek format: "Motor Yağı: 5W-30, Yağ Filtresi: Bosch, Diğer: Fren Balatası")
+  bakim.detay.split(',').forEach(item => {
+    const [key, value] = item.split(':').map(s => s.trim());
+    if (detaylar.hasOwnProperty(key)) {
+      detaylar[key] = value;
+    }
+  });
+
+  tr.innerHTML = `
+    <td>${bakim.tarih}</td>
+    <td>${bakim.servis || '-'}</td>
+    <td>
+      <div><strong>Motor Yağı:</strong> ${detaylar["Motor Yağı"]}</div>
+      <div><strong>Yağ Filtresi:</strong> ${detaylar["Yağ Filtresi"]}</div>
+      <div><strong>Hava Filtresi:</strong> ${detaylar["Hava Filtresi"]}</div>
+      <div><strong>Polen Filtresi:</strong> ${detaylar["Polen Filtresi"]}</div>
+      <div><strong>Yakıt Filtresi:</strong> ${detaylar["Yakıt Filtresi"]}</div>
+      <div><strong>Diğer:</strong> ${detaylar["Diğer"]}</div>
+    </td>
+  `;
+  bakimTableBody.appendChild(tr);
+});
           }
         });
     }
