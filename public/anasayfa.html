@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Bakım Kayıtları ve Servis Formu</title>
+  <title>Bakım Kayıtları ve islem Formu</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
     #bakimDetay { margin-top: 20px; }
@@ -18,7 +18,7 @@
   </style>
 </head>
 <body>
-  <h1>Bakım Kayıtları ve Servis Formu</h1>
+  <h1>Bakım Kayıtları ve islem Formu</h1>
 
   <!-- Menü butonları eklendi -->
   <nav style="margin-bottom: 20px;">
@@ -190,7 +190,7 @@
       const yakitFiltresi = bakimEkleForm.elements["yakitFiltresi"].value.trim();
       const diger = bakimEkleForm.elements["diger"].value.trim();
 
-      const servisEtiketiListesi = [
+      const islemEtiketiListesi = [
         motorYagi && 'Motor Yağı',
         yagFiltresi && 'Yağ Filtresi',
         havaFiltresi && 'Hava Filtresi',
@@ -213,7 +213,7 @@
         return;
       }
 
-      const servis = servisEtiketiListesi.join(', ') || "Servis Yapıldı";
+      const islem = islemEtiketiListesi.join(', ') || "islem Yapıldı";
       const detay = islemParcalari.join(', ') ||
 "Detay Bilgisi Yok";
 const tarih = new Date().toISOString().split('T')[0];
@@ -221,13 +221,13 @@ const tarih = new Date().toISOString().split('T')[0];
     alert('Lütfen plaka girin.');
     return;
   }
- console.log('Gönderilen veri:', JSON.stringify({ plaka, tarih, servis, detay }, null, 2));
+ console.log('Gönderilen veri:', JSON.stringify({ plaka, tarih, islem, detay }, null, 2));
 
   try {
     const res = await fetch(`/api/bakimlar/${plaka}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plaka, tarih, servis, detay })
+      body: JSON.stringify({ plaka, tarih, islem, detay })
     });
 
 const text = await res.text(); 
