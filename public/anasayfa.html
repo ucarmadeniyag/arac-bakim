@@ -266,17 +266,21 @@ console.log('Sunucudan gelen cevap:', text);
 await fetchBakimlar(plaka);
   silButon.style.display = 'inline-block';
 } else {
-try {
-  const data = JSON.parse(text);
-        eklemeMesaji.textContent = data.message || 'Bir hata oluştu!';
-} catch {
-        eklemeMesaji.textContent = 'Bir hata oluştu!';
-  eklemeMesaji.style.color = 'red';
-  eklemeMesaji.style.display = 'block';
-}
-} catch (error) {
-  alert('Sunucuya bağlanırken hata oluştu: ' + error.message);
-}
+   try {
+          const data = JSON.parse(text);
+          eklemeMesaji.textContent = data.message || 'Bir hata oluştu!';
+        } catch (err) {
+          eklemeMesaji.textContent = 'Bir hata oluştu!';
+        }
+
+        eklemeMesaji.style.color = 'red';
+        eklemeMesaji.style.display = 'block';
+      }
+
+    } catch (error) {
+      alert('Sunucuya bağlanırken hata oluştu: ' + error.message);
+    }
+  });
 </script> </body> </html> 
 
 ```
