@@ -204,8 +204,10 @@
   <script>
     bakimEkleForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+console.log('Form submit event tetiklendi');
 
       const plaka = plakaInput.value.trim().toUpperCase();
+seciliPlaka = plaka;
 
       const motorYagi = bakimEkleForm.elements["motorYagi"].value.trim();
       const yagFiltresi = bakimEkleForm.elements["yagFiltresi"].value.trim();
@@ -261,7 +263,7 @@ console.log('Sunucudan gelen cevap:', text);
   eklemeMesaji.style.color = 'green';
   eklemeMesaji.style.display = 'block';
   bakimEkleForm.reset();
-  fetchBakimlar(plaka);
+await fetchBakimlar(plaka);
   silButon.style.display = 'inline-block';
 } else {
 try {
@@ -272,11 +274,9 @@ try {
   eklemeMesaji.style.color = 'red';
   eklemeMesaji.style.display = 'block';
 }
+} catch (error) {
+  alert('Sunucuya bağlanırken hata oluştu: ' + error.message);
 }
-catch (error) {
-    alert('Sunucuya bağlanırken hata oluştu: ' + error.message);
-}
-});
 </script> </body> </html> 
 
 ```
