@@ -85,12 +85,26 @@
         const plakalar = await res.json();
 
         plakalarUl.innerHTML = '';
-        plakalar.forEach(plaka => {
-          const li = document.createElement('li');
-          li.textContent = plaka;
-          li.addEventListener('click', () => plakayaTikla(plaka));
-          plakalarUl.appendChild(li);
-        });
+      plakalar.forEach(plaka => {
+  const li = document.createElement('li');
+  li.style.marginBottom = '10px';
+
+  const plakaYazi = document.createElement('div');
+  plakaYazi.textContent = plaka;
+  plakaYazi.style.cursor = 'pointer';
+  plakaYazi.addEventListener('click', () => plakayaTikla(plaka));
+
+  const qrImg = document.createElement('img');
+  qrImg.src = `/api/qrcode/${plaka}`;
+  qrImg.alt = `${plaka} QR Kodu`;
+  qrImg.style.width = '100px';
+  qrImg.style.marginTop = '5px';
+
+  li.appendChild(plakaYazi);
+  li.appendChild(qrImg);
+  plakalarUl.appendChild(li);
+});
+
       } catch (err) {
         console.error('Plakalar alınırken hata:', err);
       }
@@ -172,12 +186,8 @@ const islem = islemParcalari.join(', ');
           eklemeMesaji.style.display = 'block';
           bakimEkleForm.reset();
 
-          if (![...plakalarUl.children].some(li => li.textContent === plaka)) {
-            const li = document.createElement('li');
-            li.textContent = plaka;
-            li.addEventListener('click', () => plakayaTikla(plaka));
-            plakalarUl.appendChild(li);
-          }
+         await plakalarListele();
+
 
           fetchBakimlar(plaka);
         } else {
