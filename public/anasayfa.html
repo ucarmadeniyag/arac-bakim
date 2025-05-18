@@ -36,6 +36,7 @@
 
     <button type="submit">Bakım Ekle</button>
   </form>
+<div id="yeniQrAlani" style="margin-top: 15px;"></div>
 
   <p id="eklemeMesaji" style="display:none;"></p>
 
@@ -188,6 +189,22 @@
 
           fetchBakimlar(plaka);
           tumQRListele();
+          // QR kodu al ve form altına yerleştir
+          try {
+            const qrRes = await fetch(`/api/qrcode/${plaka}`);
+            const { qrCode } = await qrRes.json();
+
+            document.getElementById('yeniQrAlani').innerHTML = `
+              <div>
+                <strong>${plaka} QR Kodu:</strong><br/>
+                <img src="${qrCode}" width="120" height="120" alt="QR Kod">
+              </div>
+            `;
+          } catch (err) {
+            console.error('QR kod alınırken hata:', err);
+            document.getElementById('yeniQrAlani').innerHTML = '';
+          }
+
         } else {
           eklemeMesaji.textContent = data.message || 'Bir hata oluştu!';
           eklemeMesaji.style.color = 'red';
