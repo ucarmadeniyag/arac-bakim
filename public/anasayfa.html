@@ -20,11 +20,13 @@
 <body>
   <h1>Bakım Kayıtları ve Servis Formu</h1>
 
+  <!-- Menü butonları eklendi -->
   <nav style="margin-bottom: 20px;">
     <button id="btnBakimKayitlari">Bakım Kayıtları</button>
     <button id="btnCikis">Çıkış</button>
   </nav>
 
+  <!-- Hâlihazırdaki text input -->
   <br/><br/>
   <input type="text" id="plakaInput" placeholder="Araç Plakası Girin" style="text-transform: uppercase;" />
   
@@ -61,7 +63,7 @@
         <tr>
           <th>Tarih</th>
           <th>İşlem</th>
-          <th>İşlem</th>
+          <th>İşlem Sil</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -106,7 +108,7 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
               <td>${bakim.tarih}</td>
-              <td>${bakim.detay || bakim.islem}</td>
+              <td>${bakim.islem}</td>
               <td><button class="silKayitBtn" data-index="${index}">Sil</button></td>
             `;
             bakimTableBody.appendChild(tr);
@@ -139,76 +141,13 @@
       }
     }
 
-    bakimEkleForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // Menüler için yönlendirme
+    document.getElementById('btnBakimKayitlari').addEventListener('click', () => {
+      window.location.href = 'bakimlar.html';
+    });
 
-      const plaka = plakaInput.value.trim().toUpperCase();
-
-      const motorYagi = bakimEkleForm.elements["motorYagi"].value.trim();
-      const yagFiltresi = bakimEkleForm.elements["yagFiltresi"].value.trim();
-      const havaFiltresi = bakimEkleForm.elements["havaFiltresi"].value.trim();
-      const polenFiltresi = bakimEkleForm.elements["polenFiltresi"].value.trim();
-      const yakitFiltresi = bakimEkleForm.elements["yakitFiltresi"].value.trim();
-      const diger = bakimEkleForm.elements["diger"].value.trim();
-
-      const islemParcalari = [
-        motorYagi && `Motor Yağı: ${motorYagi}`,
-        yagFiltresi && `Yağ Filtresi: ${yagFiltresi}`,
-        havaFiltresi && `Hava Filtresi: ${havaFiltresi}`,
-        polenFiltresi && `Polen Filtresi: ${polenFiltresi}`,
-        yakitFiltresi && `Yakıt Filtresi: ${yakitFiltresi}`,
-        diger && `Diğer: ${diger}`
-      ].filter(Boolean);
-
-      const servisEtiketiListesi = [
-        motorYagi && 'Motor Yağı',
-        yagFiltresi && 'Yağ Filtresi',
-        havaFiltresi && 'Hava Filtresi',
-        polenFiltresi && 'Polen Filtresi',
-        yakitFiltresi && 'Yakıt Filtresi',
-        diger && 'Diğer'
-      ].filter(Boolean);
-
-      if (islemParcalari.length === 0) {
-        alert('En az bir işlem alanı doldurulmalı.');
-        return;
-      }
-
-      const servis = servisEtiketiListesi.join(', ');
-      const detay = islemParcalari.join(', ');
-      const tarih = new Date().toISOString().split('T')[0];
-
-      if (!plaka) {
-        alert('Lütfen plaka girin.');
-        return;
-      }
-
-      try {
-        const res = await fetch(`/api/bakimlar/${plaka}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tarih, servis, detay })
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          eklemeMesaji.textContent = 'Bakım kaydı başarıyla eklendi!';
-          eklemeMesaji.style.color = 'green';
-          eklemeMesaji.style.display = 'block';
-          bakimEkleForm.reset();
-          fetchBakimlar(plaka);
-          silButon.style.display = 'inline-block';
-        } else {
-          eklemeMesaji.textContent = data.message || 'Bir hata oluştu!';
-          eklemeMesaji.style.color = 'red';
-          eklemeMesaji.style.display = 'block';
-        }
-      } catch (err) {
-        eklemeMesaji.textContent = 'Sunucuya bağlanırken hata oluştu.';
-        eklemeMesaji.style.color = 'red';
-        eklemeMesaji.style.display = 'block';
-      }
+    document.getElementById('btnCikis').addEventListener('click', () => {
+      window.location.href = 'index.html';
     });
 
     silButon.addEventListener('click', async () => {
@@ -235,13 +174,80 @@
       }
     });
 
-    document.getElementById('btnBakimKayitlari').addEventListener('click', () => {
-      window.location.href = 'bakimlar.html';
+  </script>
+
+  <!-- Burada sadece submit handler'ı yeniliyoruz -->
+  <script>
+    bakimEkleForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const plaka = plakaInput.value.trim().toUpperCase();
+
+      const motorYagi = bakimEkleForm.elements["motorYagi"].value.trim();
+      const yagFiltresi = bakimEkleForm.elements["yagFiltresi"].value.trim();
+      const havaFiltresi = bakimEkleForm.elements["havaFiltresi"].value.trim();
+      const polenFiltresi = bakimEkleForm.elements["polenFiltresi"].value.trim();
+      const yakitFiltresi = bakimEkleForm.elements["yakitFiltresi"].value.trim();
+      const diger = bakimEkleForm.elements["diger"].value.trim();
+
+      const servisEtiketiListesi = [
+        motorYagi && 'Motor Yağı',
+        yagFiltresi && 'Yağ Filtresi',
+        havaFiltresi && 'Hava Filtresi',
+        polenFiltresi && 'Polen Filtresi',
+        yakitFiltresi && 'Yakıt Filtresi',
+        diger && 'Diğer'
+      ].filter(Boolean);
+
+      const islemParcalari = [
+        motorYagi && `Motor Yağı: ${motorYagi}`,
+        yagFiltresi && `Yağ Filtresi: ${yagFiltresi}`,
+        havaFiltresi && `Hava Filtresi: ${havaFiltresi}`,
+        polenFiltresi && `Polen Filtresi: ${polenFiltresi}`,
+        yakitFiltresi && `Yakıt Filtresi: ${yakitFiltresi}`,
+        diger && `Diğer: ${diger}`
+      ].filter(Boolean);
+
+      if (islemParcalari.length === 0) {
+        alert('En az bir işlem alanı doldurulmalı.');
+        return;
+      }
+
+      const servis = servisEtiketiListesi.join(', ') || "Servis Yapıldı";
+      const detay = islemParcalari.join(', ') ||
+"Detay Bilgisi Yok";
+const tarih = new Date().toISOString().split('T')[0];
+  if (!plaka) {
+    alert('Lütfen plaka girin.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/bakimlar/${plaka}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tarih, servis, detay })
     });
 
-    document.getElementById('btnCikis').addEventListener('click', () => {
-      window.location.href = 'index.html';
-    });
-  </script>
-</body>
-</html>
+    const data = await res.json();
+
+    if (res.ok) {
+      eklemeMesaji.textContent = 'Bakım kaydı başarıyla eklendi!';
+      eklemeMesaji.style.color = 'green';
+      eklemeMesaji.style.display = 'block';
+      bakimEkleForm.reset();
+      fetchBakimlar(plaka);
+      silButon.style.display = 'inline-block';
+    } else {
+      eklemeMesaji.textContent = data.message || 'Bir hata oluştu!';
+      eklemeMesaji.style.color = 'red';
+      eklemeMesaji.style.display = 'block';
+    }
+  } catch (err) {
+    eklemeMesaji.textContent = 'Sunucuya bağlanırken hata oluştu.';
+    eklemeMesaji.style.color = 'red';
+    eklemeMesaji.style.display = 'block';
+  }
+});
+</script> </body> </html> ```
+
