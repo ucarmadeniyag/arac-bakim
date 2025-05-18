@@ -112,15 +112,20 @@
       }
     }
 
-    async function fetchQrKod(plaka) {
-      try {
-        const res = await fetch(`/api/qrcode/${plaka}`);
-        const data = await res.json();
-        qrKodImg.src = data.qrCode;
-      } catch (err) {
-        console.error('QR kod alınırken hata:', err);
-      }
+   async function fetchQrKod(plaka) {
+  try {
+    const res = await fetch(`/api/qrcode/${plaka}`);
+    const data = await res.json();
+    if (data.qrCode.startsWith('data:image')) {
+      qrKodImg.src = data.qrCode;  // Eğer tam data URL ise direkt atama
+    } else {
+      qrKodImg.src = 'data:image/png;base64,' + data.qrCode;  // Değilse base64 string olarak ekle
     }
+  } catch (err) {
+    console.error('QR kod alınırken hata:', err);
+  }
+}
+
 
     bakimEkleForm.addEventListener('submit', async (e) => {
       e.preventDefault();
