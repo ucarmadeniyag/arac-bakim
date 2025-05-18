@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Araç Bakım Detayları</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { padding: 8px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>Araç Bakım Detayları</h1>
+  <div id="info"></div>
+  <table id="bakimTable" style="display:none;">
+    <thead>
+      <tr><th>Tarih</th><th>İşlem</th><th>Detay</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <p id="noData" style="display:none;">Bu araca ait bakım kaydı bulunamadı.</p>
+
+  <script>
+    // URL'den plaka parametresini al
+    const params = new URLSearchParams(window.location.search);
+    const plaka = params.get('plaka');
+
+    const infoDiv = document.getElementById('info');
+    const bakimTable = document.getElementById('bakimTable');
+    const tbody = bakimTable.querySelector('tbody');
+    const noData = document.getElementById('noData');
+
+    if (!plaka) {
+      infoDiv.textContent = 'Plaka bilgisi bulunamadı.';
+    } else {
+      infoDiv.textContent = `${plaka} plakalı aracın bakım kayıtları:`;
+
+      fetch(`/api/bakimlar/${plaka}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data.length) {
+            noData.style.display = 'block';
+            bakimTable.style.display = 'none';
+            return;
+          }
+          noData.style.display = 'none';
+          bakimTable.style.display = 'table';
+          tbody.innerHTML = '';
+
+          data.forEach(bakim => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${bakim.tarih}</td>
+              <td>${bakim.islem}</td>
+              <td>${bakim.detay}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        })
+        .catch(err => {
+          infoDiv.textContent = 'Bakım kayıtları alınırken hata oluştu.';
+          console.error(err);
+        });
+    }
+  </script>
+</body>
+</html>
