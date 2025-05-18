@@ -306,6 +306,10 @@ if (res.ok) {
     printBtn.textContent = 'Yazdır';
     printBtn.style.marginTop = '10px';
     printBtn.onclick = () => {
+const canvas = qrWrapper.querySelector('canvas');
+  if (!canvas) return alert('QR kod bulunamadı.');
+
+  const imgData = canvas.toDataURL();
       const printWindow = window.open('', '', 'width=400,height=400');
       printWindow.document.write(`
         <html>
@@ -313,7 +317,8 @@ if (res.ok) {
             <title>QR Kod Yazdır</title>
           </head>
           <body style="text-align:center; font-family:sans-serif;">
-            ${qrWrapper.innerHTML}
+            <img src="${imgData}" alt="QR Kod" />
+        <p>${plaka} plakalı araç QR kodu</p>
             <script>
               window.onload = function() {
                 window.print();
