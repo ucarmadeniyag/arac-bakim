@@ -15,6 +15,18 @@
       font-size: 14px;
       cursor: pointer;
     }
+.row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+.input-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 150px;
+}
+
   </style>
 </head>
 <body>
@@ -32,23 +44,35 @@
   
   <h2>Bakım Ekle</h2>
   <form id="bakimEkleForm">
-    <label>1-) Motor Yağı:</label><br/>
-    <input type="text" name="motorYagi" /><br/><br/>
+    <div class="row">
+  <div class="input-group">
+    <label>1-) Motor Yağı:</label>
+    <input type="text" name="motorYagi" />
+  </div>
+  <div class="input-group">
+    <label>2-) Yağ Filtresi:</label>
+    <input type="text" name="yagFiltresi" />
+  </div>
+  <div class="input-group">
+    <label>3-) Hava Filtresi:</label>
+    <input type="text" name="havaFiltresi" />
+  </div>
+</div>
 
-    <label>2-) Yağ Filtresi:</label><br/>
-    <input type="text" name="yagFiltresi" /><br/><br/>
-
-    <label>3-) Hava Filtresi:</label><br/>
-    <input type="text" name="havaFiltresi" /><br/><br/>
-
-    <label>4-) Polen Filtresi:</label><br/>
-    <input type="text" name="polenFiltresi" /><br/><br/>
-
-    <label>5-) Yakıt Filtresi:</label><br/>
-    <input type="text" name="yakitFiltresi" /><br/><br/>
-
-    <label>6-) Diğer:</label><br/>
-    <input type="text" name="diger" /><br/><br/>
+<div class="row">
+  <div class="input-group">
+    <label>4-) Polen Filtresi:</label>
+    <input type="text" name="polenFiltresi" />
+  </div>
+  <div class="input-group">
+    <label>5-) Yakıt Filtresi:</label>
+    <input type="text" name="yakitFiltresi" />
+  </div>
+  <div class="input-group">
+    <label>6-) Diğer:</label>
+    <input type="text" name="diger" />
+  </div>
+</div>
 
     <button type="submit">Bakım Ekle</button>
   </form>
@@ -213,10 +237,9 @@
         return;
       }
 
-      const islem = islemEtiketiListesi.join(', ') || "islem Yapıldı";
-      const detay = islemParcalari.join(', ') ||
-"Detay Bilgisi Yok";
-const tarih = new Date().toISOString().split('T')[0];
+      const islem = islemEtiketiListesi.join(', ') || "İşlem Yapıldı";
+  const detay = islemParcalari.join(', ') || "Detay Bilgisi Yok";
+  const tarih = new Date().toISOString().split('T')[0];
   if (!plaka) {
     alert('Lütfen plaka girin.');
     return;
@@ -232,23 +255,29 @@ const tarih = new Date().toISOString().split('T')[0];
 
 const text = await res.text(); 
 console.log('Sunucudan gelen cevap:', text);
-    if (res.ok) {
-      eklemeMesaji.textContent = 'Bakım kaydı başarıyla eklendi!';
-      eklemeMesaji.style.color = 'green';
-      eklemeMesaji.style.display = 'block';
-      bakimEkleForm.reset();
-      fetchBakimlar(plaka);
-      silButon.style.display = 'inline-block';
-    } else {
-      eklemeMesaji.textContent = data.message || 'Bir hata oluştu!';
-      eklemeMesaji.style.color = 'red';
-      eklemeMesaji.style.display = 'block';
-    }
-  } catch (err) {
-    eklemeMesaji.textContent = 'Sunucuya bağlanırken hata oluştu.';
-    eklemeMesaji.style.color = 'red';
-    eklemeMesaji.style.display = 'block';
-  }
+
+ if (res.ok) {
+  eklemeMesaji.textContent = 'Bakım kaydı başarıyla eklendi!';
+  eklemeMesaji.style.color = 'green';
+  eklemeMesaji.style.display = 'block';
+  bakimEkleForm.reset();
+  fetchBakimlar(plaka);
+  silButon.style.display = 'inline-block';
+} else {
+try {
+  const data = JSON.parse(text);
+        eklemeMesaji.textContent = data.message || 'Bir hata oluştu!';
+} catch {
+        eklemeMesaji.textContent = 'Bir hata oluştu!';
+  eklemeMesaji.style.color = 'red';
+  eklemeMesaji.style.display = 'block';
+}
+}
+catch (error) {
+    alert('Sunucuya bağlanırken hata oluştu: ' + error.message);
+}
 });
-</script> </body> </html> ```
+</script> </body> </html> 
+
+```
 
