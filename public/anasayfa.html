@@ -20,15 +20,11 @@
 <body>
   <h1>Bakım Kayıtları ve Servis Formu</h1>
 
-  <!-- Menü butonları eklendi -->
   <nav style="margin-bottom: 20px;">
     <button id="btnBakimKayitlari">Bakım Kayıtları</button>
     <button id="btnCikis">Çıkış</button>
   </nav>
 
-
-
-  <!-- Hâlihazırdaki text input -->
   <br/><br/>
   <input type="text" id="plakaInput" placeholder="Araç Plakası Girin" style="text-transform: uppercase;" />
   
@@ -110,7 +106,7 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
               <td>${bakim.tarih}</td>
-              <td>${bakim.islem}</td>
+              <td>${bakim.detay || bakim.islem}</td>
               <td><button class="silKayitBtn" data-index="${index}">Sil</button></td>
             `;
             bakimTableBody.appendChild(tr);
@@ -164,12 +160,22 @@
         diger && `Diğer: ${diger}`
       ].filter(Boolean);
 
+      const servisEtiketiListesi = [
+        motorYagi && 'Motor Yağı',
+        yagFiltresi && 'Yağ Filtresi',
+        havaFiltresi && 'Hava Filtresi',
+        polenFiltresi && 'Polen Filtresi',
+        yakitFiltresi && 'Yakıt Filtresi',
+        diger && 'Diğer'
+      ].filter(Boolean);
+
       if (islemParcalari.length === 0) {
         alert('En az bir işlem alanı doldurulmalı.');
         return;
       }
 
-      const islem = islemParcalari.join(', ');
+      const servis = servisEtiketiListesi.join(', ');
+      const detay = islemParcalari.join(', ');
       const tarih = new Date().toISOString().split('T')[0];
 
       if (!plaka) {
@@ -181,7 +187,7 @@
         const res = await fetch(`/api/bakimlar/${plaka}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tarih, islem })
+          body: JSON.stringify({ tarih, servis, detay })
         });
 
         const data = await res.json();
@@ -229,7 +235,6 @@
       }
     });
 
-    // Menü butonlarının yönlendirmeleri
     document.getElementById('btnBakimKayitlari').addEventListener('click', () => {
       window.location.href = 'bakimlar.html';
     });
