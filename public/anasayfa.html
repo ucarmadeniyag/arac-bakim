@@ -9,14 +9,36 @@
     table { border-collapse: collapse; width: 100%; margin-top: 10px; }
     th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
     #eklemeMesaji { margin-top: 10px; font-weight: bold; }
+    nav button {
+      margin-right: 10px;
+      padding: 8px 15px;
+      font-size: 14px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <h1>Bakım Kayıtları ve Servis Formu</h1>
 
-  <h2>Plaka Seçimi</h2>
-  <input type="text" id="plakaInput" placeholder="Araç Plakası Girin" style="text-transform: uppercase;" />
+  <!-- Menü butonları eklendi -->
+  <nav style="margin-bottom: 20px;">
+    <button id="btnBakimKayitlari">Bakım Kayıtları</button>
+    <button id="btnCikis">Çıkış</button>
+  </nav>
 
+  <h2>Plaka Seçimi</h2>
+  <!-- Açılır menü -->
+  <select id="plakaSelect">
+    <option value="">-- Araç Plakası Seçin --</option>
+    <option value="34ABC01">34ABC01</option>
+    <option value="06XYZ99">06XYZ99</option>
+    <option value="35DEF02">35DEF02</option>
+  </select>
+
+  <!-- Hâlihazırdaki text input -->
+  <br/><br/>
+  <input type="text" id="plakaInput" placeholder="Araç Plakası Girin" style="text-transform: uppercase;" />
+  
   <h2>Bakım Ekle</h2>
   <form id="bakimEkleForm">
     <label>1-) Motor Yağı:</label><br/>
@@ -49,6 +71,7 @@
       <thead>
         <tr>
           <th>Tarih</th>
+          <th>İşlem</th>
           <th>İşlem</th>
         </tr>
       </thead>
@@ -211,6 +234,15 @@
       } catch (err) {
         alert('Sunucuya bağlanırken hata oluştu.');
       }
+    });
+
+    // Menü butonlarının yönlendirmeleri
+    document.getElementById('btnBakimKayitlari').addEventListener('click', () => {
+      window.location.href = 'bakimlar.html';
+    });
+
+    document.getElementById('btnCikis').addEventListener('click', () => {
+      window.location.href = 'index.html';
     });
   </script>
 </body>
