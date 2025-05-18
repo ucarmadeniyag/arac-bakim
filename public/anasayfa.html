@@ -104,23 +104,23 @@
           noData.style.display = 'none';
           bakimTable.style.display = 'table';
 
-          bakimlar.forEach((bakim, index) => {
+          bakimlar.forEach((bakim, login) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
               <td>${bakim.tarih}</td>
               <td>${bakim.islem}</td>
-              <td><button class="silKayitBtn" data-index="${index}">Sil</button></td>
+              <td><button class="silKayitBtn" data-login="${login}">Sil</button></td>
             `;
             bakimTableBody.appendChild(tr);
           });
 
           document.querySelectorAll('.silKayitBtn').forEach(btn => {
             btn.addEventListener('click', async () => {
-              const index = btn.getAttribute('data-index');
+              const login = btn.getAttribute('data-login');
               if (!confirm(`Bu bakım kaydını silmek istediğinize emin misiniz?`)) return;
 
               try {
-                const res = await fetch(`/api/bakimlar/${seciliPlaka}/${index}`, {
+                const res = await fetch(`/api/bakimlar/${seciliPlaka}/${login}`, {
                   method: 'DELETE'
                 });
                 if (res.ok) {
@@ -147,7 +147,7 @@
     });
 
     document.getElementById('btnCikis').addEventListener('click', () => {
-      window.location.href = 'index.html';
+      window.location.href = 'login.html';
     });
 
     silButon.addEventListener('click', async () => {
