@@ -3,155 +3,109 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Araç Bakım Takip - Müşteri</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
+  <title>Araç Bakım Takip</title>
   <style>
-    /* Aynı stil, sadece plaka giriş alanı ve buton yok */
-    * {
-      box-sizing: border-box;
-      margin: 0; padding: 0;
-      font-family: 'Poppins', sans-serif;
-    }
     body {
-      background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      color: #fff;
-    }
-    .card {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 30px 40px;
-      max-width: 480px;
-      width: 100%;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      text-align: center;
+      font-family: 'Poppins', sans-serif;
+      background: #0f111a;
+      color: #d0f0ec;
+      padding: 40px;
+      max-width: 700px;
+      margin: auto;
     }
     h1 {
-      margin-bottom: 15px;
+      margin-bottom: 10px;
       font-weight: 900;
       font-size: 2.5rem;
-      letter-spacing: 2px;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
-    p.subtitle {
-      font-weight: 500;
+    #plakaBilgi {
+      font-size: 1.4rem;
       margin-bottom: 30px;
+      color: #3dd2c0;
+      font-weight: 700;
+    }
+    .card {
+      background: #15202b;
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 5px 15px #3dd2c090;
+      font-weight: 600;
       font-size: 1.1rem;
-      color: #d0f0ec;
     }
     #sonuclar {
       margin-top: 10px;
-      text-align: left;
-      max-height: 320px;
-      overflow-y: auto;
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 15px;
-      padding: 15px 20px;
-      box-shadow: inset 0 4px 10px rgba(0,0,0,0.1);
     }
-    .bakim-kaydi {
-      background: rgba(255,255,255,0.25);
-      margin-bottom: 12px;
-      border-radius: 12px;
-      padding: 12px 15px;
+    #mesaj {
+      font-style: italic;
+      color: #ff6b6b;
+      margin-top: 30px;
       font-weight: 600;
-      color: #004d40;
-      box-shadow: 0 2px 8px #1abc9c66;
-      transition: background 0.3s ease;
-    }
-    .bakim-kaydi:hover {
-      background: #1abc9c;
-      color: white;
-      box-shadow: 0 6px 18px #16a085dd;
-    }
-    .no-result {
-      font-weight: 600;
-      color: #ffcccb;
-      padding: 12px;
-      background: rgba(255,0,0,0.3);
-      border-radius: 12px;
-    }
-    @media (max-width: 520px) {
-      .card {
-        padding: 25px 20px;
-      }
-      h1 {
-        font-size: 2rem;
-      }
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h1>Araç Bakım Takip</h1>
-    <p class="subtitle" id="subtitle">Bakım geçmişiniz aşağıda listelenmektedir.</p>
-    <div id="sonuclar"></div>
-  </div>
+  <h1>Araç Bakım Takip</h1>
+  <div id="plakaBilgi">Yükleniyor...</div>
+  <div id="sonuclar"></div>
+  <div id="mesaj"></div>
 
   <script>
     const apiUrl = "https://arac-bakim.onrender.com/api/bakimlar";
 
-    const sonuclarDiv = document.getElementById("sonuclar");
-    const subtitle = document.getElementById("subtitle");
-
-    function temizleSonuclar() {
-      sonuclarDiv.innerHTML = "";
-    }
-
-    // URL'den parametre okuma fonksiyonu
-    function getQueryParam(param) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(param);
+    // URL'den plaka parametresini alır
+    function getPlakaFromURL() {
+      const params = new URLSearchParams(window.location.hash.replace("#plaka=", ""));
+      // Bu tarz: #plaka=34ABC123
+      let plaka = window.location.hash.replace("#plaka=", "");
+      return plaka ? plaka.toUpperCase().trim() : null;
     }
 
     async function bakimGetir(plaka) {
       try {
         const res = await fetch(`${apiUrl}/${plaka}`);
         if (!res.ok) throw new Error("Kayıt bulunamadı");
-        const data = await res.json();
-        return data;
+        return await res.json();
       } catch {
         return null;
       }
     }
 
-    function sonucYazdir(bakimlar) {
-      temizleSonuclar();
-      if (!bakimlar || bakımlar.length === 0) {
-        sonuclarDiv.innerHTML = '<div class="no-result">Bu plakaya ait bakım kaydı bulunamadı.</div>';
+    function yazdirBakimlar(bakimlar) {
+      const container = document.getElementById("sonuclar");
+      const mesaj = document.getElementById("mesaj");
+      container.innerHTML = "";
+      mesaj.textContent = "";
+
+      if (!bakimlar || bakimlar.length === 0) {
+        mesaj.textContent = "Bu plakaya ait bakım kaydı bulunamadı.";
         return;
       }
 
-      // Tarihe göre azalan sıralama
-      bakımlar.sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
-
-      bakımlar.forEach(kayit => {
+      bakimlar.forEach(kayit => {
         const div = document.createElement("div");
-        div.className = "bakim-kaydi";
+        div.className = "card";
         div.textContent = `${kayit.tarih} - ${kayit.islem}`;
-        sonuclarDiv.appendChild(div);
+        container.appendChild(div);
       });
     }
 
-    async function sayfaYuklenince() {
-      const plaka = getQueryParam("plaka");
+    async function init() {
+      const plakaBilgi = document.getElementById("plakaBilgi");
+      const plaka = getPlakaFromURL();
+
       if (!plaka) {
-        subtitle.textContent = "Geçerli bir plaka bilgisi bulunamadı.";
-        sonuclarDiv.innerHTML = "";
+        plakaBilgi.textContent = "Geçerli plaka bilgisi bulunamadı.";
         return;
       }
-      sonuclarDiv.innerHTML = "Yükleniyor...";
-      const bakimlar = await bakimGetir(plaka.toUpperCase().trim());
-      sonucYazdir(bakimlar);
+
+      plakaBilgi.textContent = `Plaka: ${plaka}`;
+      const bakimlar = await bakimGetir(plaka);
+      yazdirBakimlar(bakimlar);
     }
 
-    window.addEventListener("load", sayfaYuklenince);
+    window.addEventListener("load", init);
   </script>
 
 </body>
