@@ -304,4 +304,124 @@
         motorYagi && `Motor Yağı: ${motorYagi}`,
         yagFiltresi && `Yağ Filtresi: ${yagFiltresi}`,
         havaFiltresi && `Hava Filtresi: ${havaFiltresi}`,
-        polenFiltresi && `Polen F
+        polenFiltresi && `Polen Filtresi: ${polenFiltresi}, yakitFiltresi && Yakıt Filtresi: ${yakitFiltresi}, diger && Diğer: ${diger}`
+].filter(Boolean);
+  if (!plaka) {
+    alert('Lütfen araç plakasını girin.');
+    return;
+  }
+
+  if (islemParcalari.length === 0) {
+    alert('Lütfen en az bir bakım işlemi girin.');
+    return;
+  }
+
+  const islemMetni = islemParcalari.join(', ');
+  const tarih = new Date().toISOString().slice(0,10);
+
+  const yeniKayit = { tarih, islem: islemMetni };
+
+  try {
+    const res = await fetch(`/api/bakimlar/${plaka}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(yeniKayit)
+    });
+    if (res.ok) {
+      eklemeMesaji.textContent = `Bakım kaydı başarıyla eklendi (${tarih})`;
+      eklemeMesaji.style.color = 'green';
+      eklemeMesaji.style.display = 'block';
+      e.target.reset();
+      fetchBakimlar(plaka);
+      generateQRCode(plaka);
+    } else {
+      eklemeMesaji.textContent = 'Bakım ekleme işlemi başarısız oldu.';
+      eklemeMesaji.style.color = 'red';
+      eklemeMesaji.style.display = 'block';
+    }
+  } catch (err) {
+    eklemeMesaji.textContent = 'Sunucuya bağlanırken hata oluştu.';
+    eklemeMesaji.style.color = 'red';
+    eklemeMesaji.style.display = 'block';
+  }
+});
+
+// Manuel tarihli form submit
+document.getElementById('bakimEkleFormManual').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const plaka = plakaInput.value.trim().toUpperCase();
+  seciliPlaka = plaka;
+
+  const tarih = e.target.elements["tarih"].value;
+  const motorYagi = e.target.elements["motorYagi"].value.trim();
+  const yagFiltresi = e.target.elements["yagFiltresi"].value.trim();
+  const havaFiltresi = e.target.elements["havaFiltresi"].value.trim();
+  const polenFiltresi = e.target.elements["polenFiltresi"].value.trim();
+  const yakitFiltresi = e.target.elements["yakitFiltresi"].value.trim();
+  const diger = e.target.elements["diger"].value.trim();
+
+  const islemParcalari = [
+    motorYagi && `Motor Yağı: ${motorYagi}`,
+    yagFiltresi && `Yağ Filtresi: ${yagFiltresi}`,
+    havaFiltresi && `Hava Filtresi: ${havaFiltresi}`,
+    polenFiltresi && `Polen Filtresi: ${polenFiltresi}`,
+    yakitFiltresi && `Yakıt Filtresi: ${yakitFiltresi}`,
+    diger && `Diğer: ${diger}`
+  ].filter(Boolean);
+
+  if (!plaka) {
+    alert('Lütfen araç plakasını girin.');
+    return;
+  }
+
+  if (!tarih) {
+    alert('Lütfen tarih seçin.');
+    return;
+  }
+
+  if (islemParcalari.length === 0) {
+    alert('Lütfen en az bir bakım işlemi girin.');
+    return;
+  }
+
+  const islemMetni = islemParcalari.join(', ');
+
+  const yeniKayit = { tarih, islem: islemMetni };
+
+  try {
+    const res = await fetch(`/api/bakimlar/${plaka}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(yeniKayit)
+    });
+    if (res.ok) {
+      manualEkleMesaji.textContent = `Bakım kaydı başarıyla eklendi (${tarih})`;
+      manualEkleMesaji.style.color = 'green';
+      manualEkleMesaji.style.display = 'block';
+      e.target.reset();
+      fetchBakimlar(plaka);
+      generateQRCode(plaka);
+    } else {
+      manualEkleMesaji.textContent = 'Bakım ekleme işlemi başarısız oldu.';
+      manualEkleMesaji.style.color = 'red';
+      manualEkleMesaji.style.display = 'block';
+    }
+  } catch (err) {
+    manualEkleMesaji.textContent = 'Sunucuya bağlanırken hata oluştu.';
+    manualEkleMesaji.style.color = 'red';
+    manualEkleMesaji.style.display = 'block';
+  }
+});
+
+function generateQRCode(plaka) {
+  const qrcodeContainer = document.getElementById('qrcodeContainer');
+  qrcodeContainer.innerHTML = ''; // Eski QR kodu temizle
+  if (!plaka) return;
+  const qr = document.createElement('div');
+  qrcodeContainer.appendChild(qr);
+  QRCode.toCanvas(qr, `https://example.com/bakimlar/${plaka}`, { width: 150 }, function (error) {
+    if (error) console.error(error);
+  });
+}
+</script> </body> </html>
