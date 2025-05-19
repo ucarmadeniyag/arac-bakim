@@ -3,133 +3,76 @@
 <head>
   <meta charset="UTF-8" />
   <title>Araç Bakım Detayları</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* Reset ve temel ayarlar */
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
     body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #4e54c8, #8f94fb);
-      color: #fff;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 40px 15px;
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 15px;
+      background: #e8f5e9; /* açık yeşil arka plan */
+      color: #2e7d32; /* koyu yeşil yazı */
     }
-
-    .container {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.37);
-      max-width: 600px;
-      width: 100%;
-      padding: 30px 40px;
-      text-align: center;
-    }
-
     h1 {
-      font-weight: 700;
-      font-size: 2.2rem;
-      margin-bottom: 12px;
-      letter-spacing: 2px;
-      text-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
-    }
-
-    .plaka {
-      font-size: 1.8rem;
-      font-weight: 600;
-      background: linear-gradient(90deg, #00d2ff, #3a47d5);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      text-align: center;
+      color: #388e3c; /* biraz daha koyu yeşil */
       margin-bottom: 25px;
-      user-select: text;
     }
-
+    #plakaInfo {
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.4em;
+      color: #1b5e20; /* plaka için daha koyu, tek renk */
+      margin-bottom: 20px;
+    }
     table {
-      width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
-      border-radius: 12px;
+      width: 100%;
+      background: white;
+      box-shadow: 0 0 10px rgba(46, 125, 50, 0.2); /* yeşil gölge */
+      border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 0 15px rgba(255,255,255,0.2);
-      background: rgba(255, 255, 255, 0.15);
-      color: #fff;
     }
-
-    thead {
-      background: rgba(0, 123, 255, 0.85);
-      text-transform: uppercase;
-      font-size: 0.9rem;
-      letter-spacing: 1px;
+    th, td {
+      padding: 12px 15px;
+      border: 1px solid #a5d6a7; /* açık yeşil sınır */
+      text-align: left;
+      font-size: 1em;
     }
-
-    thead th {
-      padding: 14px 10px;
-      font-weight: 700;
+    th {
+      background-color: #4caf50; /* yeşil başlık */
+      color: white;
+      font-weight: 600;
     }
-
-    tbody tr {
-      transition: background 0.3s ease;
-      cursor: default;
-    }
-    tbody tr:hover {
-      background: rgba(255,255,255,0.2);
-    }
-
-    tbody td {
-      padding: 12px 10px;
-      font-size: 1rem;
-    }
-
     #noData {
-      margin-top: 25px;
-      font-size: 1.1rem;
-      color: #ddd;
-      font-style: italic;
-    }
-
-    /* Responsive */
-    @media (max-width: 480px) {
-      .container {
-        padding: 20px;
-      }
-      h1 {
-        font-size: 1.8rem;
-      }
-      .plaka {
-        font-size: 1.4rem;
-      }
-      tbody td {
-        font-size: 0.9rem;
-      }
+      text-align: center;
+      margin-top: 30px;
+      font-size: 18px;
+      color: #4caf50;
     }
   </style>
 </head>
 <body>
-  <div class="container" role="main" aria-label="Araç Bakım Detayları">
-    <h1>Araç Bakım Detayları</h1>
-    <div class="plaka" id="plakaInfo">...</div>
-    
-    <table id="bakimTable" style="display:none;" aria-live="polite" aria-describedby="noData">
-      <thead>
-        <tr>
-          <th>Tarih</th>
-          <th>İşlem</th>
-          <th>Detay</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <p id="noData" style="display:none;">Bu plakaya ait bakım kaydı bulunamadı.</p>
-  </div>
+  <h1>Araç Bakım Detayları</h1>
+  <p id="plakaInfo"></p>
+  <table id="bakimTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Tarih</th>
+        <th>İşlem</th>
+        <th>Detay</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <p id="noData" style="display:none;">Bu plakaya ait bakım kaydı bulunamadı.</p>
 
   <script>
+    // Tarih formatını "YYYY-MM-DD" -> "DD-MM-YYYY" ye çevir
+    function formatTarih(tarihStr) {
+      const [yil, ay, gun] = tarihStr.split('-');
+      return `${gun}-${ay}-${yil}`;
+    }
+
     // URL'den plaka parametresini al
     const urlParams = new URLSearchParams(window.location.search);
     const plaka = urlParams.get('plaka');
@@ -143,12 +86,12 @@
       plakaInfo.textContent = 'Plaka bilgisi bulunamadı.';
       noData.style.display = 'block';
     } else {
-      plakaInfo.textContent = plaka.toUpperCase();
+      plakaInfo.textContent = `${plaka} plakalı aracın bakım kayıtları:`;
 
       fetch(`/api/bakimlar/${plaka}`)
         .then(res => res.json())
         .then(bakimlar => {
-          if (!Array.isArray(bakimlar) || bakimlar.length === 0) {
+          if (bakimlar.length === 0) {
             noData.style.display = 'block';
           } else {
             noData.style.display = 'none';
@@ -158,7 +101,7 @@
             bakimlar.forEach(bakim => {
               const tr = document.createElement('tr');
               tr.innerHTML = `
-                <td>${bakim.tarih}</td>
+                <td>${formatTarih(bakim.tarih)}</td>
                 <td>${bakim.islem}</td>
                 <td>${bakim.detay || ''}</td>
               `;
@@ -168,8 +111,6 @@
         })
         .catch(err => {
           plakaInfo.textContent = 'Bakım kayıtları alınırken hata oluştu.';
-          noData.style.display = 'none';
-          bakimTable.style.display = 'none';
           console.error(err);
         });
     }
