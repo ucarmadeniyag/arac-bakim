@@ -6,7 +6,7 @@
   <title>Araç Bakım Takip - Müşteri</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
   <style>
-    /* Genel ayarlar */
+    /* Aynı stil, sadece plaka giriş alanı ve buton yok */
     * {
       box-sizing: border-box;
       margin: 0; padding: 0;
@@ -44,41 +44,8 @@
       font-size: 1.1rem;
       color: #d0f0ec;
     }
-    input[type="text"] {
-      width: 100%;
-      padding: 14px 20px;
-      border-radius: 12px;
-      border: none;
-      font-size: 1.2rem;
-      color: #333;
-      outline: none;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      transition: box-shadow 0.3s ease;
-      margin-bottom: 25px;
-    }
-    input[type="text"]:focus {
-      box-shadow: 0 6px 20px #1abc9caa;
-    }
-    button {
-      width: 100%;
-      padding: 15px 0;
-      font-size: 1.3rem;
-      font-weight: 700;
-      border: none;
-      border-radius: 14px;
-      background: #fff;
-      color: #16a085;
-      cursor: pointer;
-      box-shadow: 0 5px 15px #16a085cc;
-      transition: background 0.3s ease, color 0.3s ease;
-    }
-    button:hover {
-      background: #16a085;
-      color: white;
-      box-shadow: 0 8px 25px #1abc9ccc;
-    }
     #sonuclar {
-      margin-top: 30px;
+      margin-top: 10px;
       text-align: left;
       max-height: 320px;
       overflow-y: auto;
@@ -109,17 +76,12 @@
       background: rgba(255,0,0,0.3);
       border-radius: 12px;
     }
-
-    /* Responsive */
     @media (max-width: 520px) {
       .card {
         padding: 25px 20px;
       }
       h1 {
         font-size: 2rem;
-      }
-      input[type="text"], button {
-        font-size: 1.1rem;
       }
     }
   </style>
@@ -128,21 +90,24 @@
 
   <div class="card">
     <h1>Araç Bakım Takip</h1>
-    <p class="subtitle">Plakanızı girin, bakım geçmişinizi kolayca görüntüleyin.</p>
-    <input type="text" id="plaka" placeholder="Örn: 34ABC123" maxlength="10" autocomplete="off" />
-    <button id="sorgulaBtn">Bakım Geçmişini Görüntüle</button>
+    <p class="subtitle" id="subtitle">Bakım geçmişiniz aşağıda listelenmektedir.</p>
     <div id="sonuclar"></div>
   </div>
 
   <script>
     const apiUrl = "https://arac-bakim.onrender.com/api/bakimlar";
 
-    const plakaInput = document.getElementById("plaka");
-    const sorgulaBtn = document.getElementById("sorgulaBtn");
     const sonuclarDiv = document.getElementById("sonuclar");
+    const subtitle = document.getElementById("subtitle");
 
     function temizleSonuclar() {
       sonuclarDiv.innerHTML = "";
+    }
+
+    // URL'den parametre okuma fonksiyonu
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
     }
 
     async function bakimGetir(plaka) {
@@ -158,15 +123,15 @@
 
     function sonucYazdir(bakimlar) {
       temizleSonuclar();
-      if (!bakimlar || bakım.length === 0) {
+      if (!bakimlar || bakımlar.length === 0) {
         sonuclarDiv.innerHTML = '<div class="no-result">Bu plakaya ait bakım kaydı bulunamadı.</div>';
         return;
       }
 
       // Tarihe göre azalan sıralama
-      bakım.sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
+      bakımlar.sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
 
-      bakım.forEach(kayit => {
+      bakımlar.forEach(kayit => {
         const div = document.createElement("div");
         div.className = "bakim-kaydi";
         div.textContent = `${kayit.tarih} - ${kayit.islem}`;
@@ -174,24 +139,20 @@
       });
     }
 
-    async function sorgula() {
-      const plaka = plakaInput.value.toUpperCase().trim();
-      if (plaka.length < 3) {
-        sonuclarDiv.innerHTML = '<div class="no-result">Lütfen geçerli bir plaka giriniz.</div>';
+    async function sayfaYuklenince() {
+      const plaka = getQueryParam("plaka");
+      if (!plaka) {
+        subtitle.textContent = "Geçerli bir plaka bilgisi bulunamadı.";
+        sonuclarDiv.innerHTML = "";
         return;
       }
       sonuclarDiv.innerHTML = "Yükleniyor...";
-      const bakimlar = await bakimGetir(plaka);
+      const bakimlar = await bakimGetir(plaka.toUpperCase().trim());
       sonucYazdir(bakimlar);
     }
 
-    sorgulaBtn.addEventListener("click", sorgula);
-
-    plakaInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        sorgula();
-      }
-    });
+    window.addEventListener("load", sayfaYuklenince);
   </script>
+
 </body>
 </html>
