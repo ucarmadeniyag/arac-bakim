@@ -54,12 +54,11 @@
   <script>
     const apiUrl = "https://arac-bakim.onrender.com/api/bakimlar";
 
-    // URL'den plaka parametresini alır
-    function getPlakaFromURL() {
-      const params = new URLSearchParams(window.location.hash.replace("#plaka=", ""));
-      // Bu tarz: #plaka=34ABC123
-      let plaka = window.location.hash.replace("#plaka=", "");
-      return plaka ? plaka.toUpperCase().trim() : null;
+    // URL hash'den plaka parametresini alır: #plaka=34ABC123
+    function getPlakaFromHash() {
+      const hash = window.location.hash; // "#plaka=34ABC123"
+      if (!hash.startsWith("#plaka=")) return null;
+      return hash.substring(7).toUpperCase().trim(); // 7 karakter "#plaka=" uzunluğu
     }
 
     async function bakimGetir(plaka) {
@@ -86,14 +85,14 @@
       bakimlar.forEach(kayit => {
         const div = document.createElement("div");
         div.className = "card";
-        div.textContent = `${kayit.tarih} - ${kayit.islem}`;
+        div.innerHTML = `<strong>${kayit.tarih}</strong> - ${kayit.islem}`;
         container.appendChild(div);
       });
     }
 
     async function init() {
       const plakaBilgi = document.getElementById("plakaBilgi");
-      const plaka = getPlakaFromURL();
+      const plaka = getPlakaFromHash();
 
       if (!plaka) {
         plakaBilgi.textContent = "Geçerli plaka bilgisi bulunamadı.";
