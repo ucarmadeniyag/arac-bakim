@@ -3,192 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Araç Bakım Takip</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <title>Araç Bakım Bilgisi</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
   <style>
     * {
       box-sizing: border-box;
-      margin: 0; padding: 0;
+      margin: 0;
+      padding: 0;
       font-family: 'Poppins', sans-serif;
     }
+
     body {
-      background: linear-gradient(to right, #f5f7fa, #c3cfe2);
+      background: #f0f4f8;
       color: #2c3e50;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    header {
-      background: linear-gradient(to right, #34495e, #2c3e50);
-      color: white;
-      padding: 30px 20px;
-      text-align: center;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
-    nav {
-      margin-top: 10px;
-    }
-    nav a {
-      color: white;
-      margin: 0 20px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1.1rem;
-      transition: all 0.3s ease;
-    }
-    nav a:hover {
-      color: #1abc9c;
-      text-decoration: underline;
-    }
-    .container {
-      max-width: 960px;
-      margin: 40px auto;
-      padding: 0 20px;
-      flex: 1;
-    }
-    section {
-      margin-bottom: 50px;
-    }
-    h1, h2 {
-      font-weight: 700;
-      margin-bottom: 15px;
-      color: #2c3e50;
-    }
-    p {
-      font-size: 1rem;
-      line-height: 1.6;
-      color: #555;
-    }
-    .card {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      margin-top: 20px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15);
-    }
-    input[type="text"], input[type="date"] {
-      width: 100%;
-      max-width: 450px;
-      padding: 14px 18px;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-      margin-top: 10px;
-      margin-bottom: 25px;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-    input[type="text"]:focus, input[type="date"]:focus {
-      border-color: #1abc9c;
-      outline: none;
-      box-shadow: 0 0 10px #1abc9c90;
-    }
-    .btn {
-      display: inline-block;
-      padding: 14px 28px;
-      background: linear-gradient(to right, #1abc9c, #16a085);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.3s ease, background 0.3s ease;
-      box-shadow: 0 6px 15px rgba(26, 188, 156, 0.3);
-    }
-    .btn:hover {
-      background: linear-gradient(to right, #16a085, #1abc9c);
-      transform: scale(1.05);
-    }
-    #qrSection {
-      margin-top: 30px;
-      text-align: center;
-    }
-    canvas {
-      margin-top: 10px;
-      border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    }
-    footer {
-      background: #2c3e50;
-      color: white;
-      text-align: center;
-      padding: 18px;
-      font-size: 0.9rem;
-      box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
+      padding: 40px 20px;
     }
 
-    /* Responsive */
+    #plakaSayfasi {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      border-radius: 16px;
+      padding: 40px 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      animation: fadeIn 1s ease;
+    }
+
+    #plakaBaslik {
+      font-size: 2rem;
+      color: #1abc9c;
+      margin-bottom: 30px;
+      text-align: center;
+      border-bottom: 2px solid #1abc9c44;
+      padding-bottom: 10px;
+    }
+
+    .card {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: #ffffff;
+      padding: 20px;
+      border-left: 5px solid #1abc9c;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .card-icon {
+      font-size: 1.5rem;
+      color: #1abc9c;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     @media (max-width: 600px) {
-      nav a {
-        margin: 0 12px;
-        font-size: 1rem;
-        display: inline-block;
-        margin-top: 10px;
+      body {
+        padding: 20px 10px;
       }
-      .container {
-        margin: 20px auto;
-        padding: 0 12px;
-      }
-      input[type="text"], input[type="date"], .btn {
-        width: 100%;
-        max-width: 100%;
+
+      #plakaSayfasi {
+        padding: 30px 20px;
       }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Araç Bakım Takip Sistemi</h1>
-    <nav>
-      <a href="#">Ana Sayfa</a>
-      <a href="#bakim">Bakım Geçmişi</a>
-      <a href="#admin">Yönetici Paneli</a>
-    </nav>
-  </header>
-
-  <div class="container">
-    <section>
-      <h2>Hoş Geldiniz</h2>
-      <p>Firmamız araçlarınızın düzenli bakımını titizlikle takip eder. QR kodunuzla veya araç bilgisiyle geçmiş bakımları görüntüleyebilirsiniz.</p>
-      <a class="btn" href="#bakim">Bakım Geçmişini Görüntüle</a>
-    </section>
-
-    <section id="bakim">
-      <h2>Araç Bakım Geçmişi</h2>
-      <p>Aracınızın plakasını girerek bakım geçmişini sorgulayın:</p>
-      <input type="text" id="plaka" placeholder="Örn: 34ABC123" />
-      <div id="sonuclar"></div>
-    </section>
-
-    <section id="plakaSayfasi" style="display:none">
-      <h2 id="plakaBaslik"></h2>
-      <div id="plakaBakimlar"></div>
-    </section>
-
-    <section id="admin">
-      <h2>Yönetici Paneli</h2>
-      <p>Yeni araç ve bakım bilgisi ekleyin:</p>
-      <input type="text" id="yeniPlaka" placeholder="Plaka (örn: 34ABC123)" />
-      <input type="date" id="bakimTarihi" placeholder="Bakım Tarihi" />
-      <input type="text" id="islem" placeholder="Bakım Türü (örn: Yağ Değişimi)" />
-      <button class="btn" onclick="aracEkle()">Kaydet</button>
-      <p id="ekleBilgi" style="margin-top:10px; color: #e74c3c;"></p>
-      <div id="qrSection" style="display:none">
-        <p><strong>QR Kod:</strong></p>
-        <canvas id="qrcode"></canvas>
-      </div>
-    </section>
-  </div>
-
-  <footer>
-    <p>&copy; 2025 Araç Bakım Takip. Tüm hakları saklıdır.</p>
-  </footer>
+  <section id="plakaSayfasi" style="display: none;">
+    <h2 id="plakaBaslik"></h2>
+    <div id="plakaBakimlar"></div>
+  </section>
 
   <script>
     const apiUrl = "https://arac-bakim.onrender.com/api/bakimlar";
@@ -203,78 +97,11 @@
       }
     }
 
-    document.getElementById("plaka").addEventListener("input", async function () {
-      const plaka = this.value.toUpperCase().trim();
-      const alan = document.getElementById("sonuclar");
-      alan.innerHTML = "";
-      if (plaka.length < 3) return;
-
-      const bakimlar = await bakimGetir(plaka);
-      if (bakimlar) {
-        bakimlar.forEach(kayit => {
-          const div = document.createElement("div");
-          div.classList.add("card");
-          div.innerHTML = `<strong>${kayit.tarih}</strong> - ${kayit.islem}`;
-          alan.appendChild(div);
-        });
-      } else {
-        alan.textContent = "Bu plakaya ait bakım kaydı bulunamadı.";
-      }
-    });
-
-    async function aracEkle() {
-      const plaka = document.getElementById("yeniPlaka").value.toUpperCase().trim();
-      const tarih = document.getElementById("bakimTarihi").value;
-      const islem = document.getElementById("islem").value.trim();
-      const bilgi = document.getElementById("ekleBilgi");
-
-      if (!plaka || !tarih || !islem) {
-        bilgi.style.color = "#e74c3c";
-        bilgi.textContent = "Lütfen tüm alanları doldurun.";
-        return;
-      }
-
-      try {
-        const res = await fetch(`${apiUrl}/${plaka}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tarih, islem }),
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          bilgi.style.color = "#27ae60";
-          bilgi.textContent = "Bakım kaydı başarıyla eklendi.";
-          document.getElementById("yeniPlaka").value = "";
-          document.getElementById("bakimTarihi").value = "";
-          document.getElementById("islem").value = "";
-          document.getElementById("qrSection").style.display = "block";
-
-          const url = `${window.location.origin}/#plaka=${plaka}`;
-          const qr = new QRious({
-            element: document.getElementById("qrcode"),
-            value: url,
-            size: 200,
-            level: "H",
-          });
-
-        } else {
-          bilgi.style.color = "#e74c3c";
-          bilgi.textContent = data.message || "Kayıt eklenirken hata oluştu.";
-        }
-
-      } catch (err) {
-        bilgi.style.color = "#e74c3c";
-        bilgi.textContent = "Sunucu hatası: Kayıt eklenemedi.";
-      }
-    }
-
     window.addEventListener("load", async () => {
       const hash = window.location.hash;
       if (hash.startsWith("#plaka=")) {
         const plaka = hash.replace("#plaka=", "").toUpperCase();
-        document.getElementById("plakaBaslik").textContent = `Plaka: ${plaka}`;
+        document.getElementById("plakaBaslik").textContent = `Araç Plakası: ${plaka}`;
         document.getElementById("plakaSayfasi").style.display = "block";
 
         const bakimlar = await bakimGetir(plaka);
@@ -285,11 +112,22 @@
           bakimlar.forEach(kayit => {
             const div = document.createElement("div");
             div.classList.add("card");
-            div.innerHTML = `<strong>${kayit.tarih}</strong> - ${kayit.islem}`;
+            div.innerHTML = `
+              <div class="card-icon">🛠️</div>
+              <div>
+                <div style="font-weight:bold; font-size:1.1rem;">${kayit.tarih}</div>
+                <div style="color:#555;">${kayit.islem}</div>
+              </div>
+            `;
             container.appendChild(div);
           });
         } else {
-          container.textContent = "Bu plakaya ait bakım kaydı bulunamadı.";
+          container.innerHTML = `
+            <div class="card" style="justify-content:center; text-align:center;">
+              <div class="card-icon">ℹ️</div>
+              <div>Bu plakaya ait bakım kaydı bulunamadı.</div>
+            </div>
+          `;
         }
       }
     });
