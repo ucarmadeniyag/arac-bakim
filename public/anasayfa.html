@@ -319,9 +319,11 @@ return;
       // QR Kod oluştur
       const qrMetin = `${plaka} - ${tarih} - ${islemEtiketiListesi.join(', ')}`;
       qrcodeContainer.innerHTML = '';
-      QRCode.toCanvas(qrcodeContainer, qrMetin, { width: 150 }, (error) => {
-        if (error) console.error(error);
-      });
+const canvas = document.createElement('canvas');
+qrcodeContainer.appendChild(canvas);
+QRCode.toCanvas(canvas, qrMetin, { width: 150 }, (error) => {
+  if (error) console.error(error);
+});
 
       // Form temizle
       bakimEkleForm.reset();
@@ -404,10 +406,12 @@ bakimEkleForm2.addEventListener('submit', async (e) => {
 
       // QR Kod oluştur (ikinci kutu için)
       const qrMetin = `${plaka} - ${tarih} - ${islemEtiketiListesi.join(', ')}`;
-      qrcodeContainer2.innerHTML = '';
-      QRCode.toCanvas(qrcodeContainer2, qrMetin, { width: 150 }, (error) => {
-        if (error) console.error(error);
-      });
+    qrcodeContainer2.innerHTML = '';
+const canvas2 = document.createElement('canvas');
+qrcodeContainer2.appendChild(canvas2);
+QRCode.toCanvas(canvas2, qrMetin, { width: 150 }, (error) => {
+  if (error) console.error(error);
+});
 
       // Form temizle
       bakimEkleForm2.reset();
